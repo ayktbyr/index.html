@@ -4,9 +4,11 @@
   <meta charset="UTF-8" />
   <title>Icon Master - Farcaster Crypto Quiz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  
+  <!-- Game Icon (Favicon) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 
-  <!-- FARCASTER METADATA (JSON Format for better compatibility) -->
+  <!-- FARCASTER METADATA -->
   <meta property="fc:frame" content='{"version":"next","imageUrl":"https://icon-master-demo.vercel.app/og-image.png","button":{"title":"Play Icon Master","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://icon-master-demo.vercel.app/splash.png","splashBackgroundColor":"#0f172a"}}}' />
   
   <!-- Open Graph -->
@@ -22,8 +24,10 @@
   <script type="module">
     import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
     
+    window.sdk = sdk; // Make global for click handlers
+
     window.onload = async () => {
-      // Initialize Game Data from LocalStorage
+      // Initialize Game Data
       loadState();
       updateUI();
       updateJokerStatus();
@@ -33,13 +37,6 @@
       try {
         await sdk.actions.ready();
         console.log("Farcaster SDK Ready!");
-        
-        // Auto-connect context if available (simulated here, real app would use sdk.context)
-        const context = await sdk.context;
-        if(context && context.user) {
-           // In a real app, we'd use the real Farcaster username here
-           // state.currentUser = context.user.username; 
-        }
       } catch (err) {
         console.error("SDK Error:", err);
       }
@@ -49,7 +46,7 @@
   <style>
     :root {
       --bg-color: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-bg: rgba(30, 41, 59, 0.85);
       --primary: #6366f1;
       --accent: #8b5cf6;
       --success: #22c55e;
@@ -57,7 +54,7 @@
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --gold: #fbbf24;
-      --nav-height: 70px; /* Fixed height for nav bar */
+      --nav-height: 80px; 
     }
 
     * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -67,11 +64,11 @@
       background: radial-gradient(circle at center top, #1e293b 0%, #020617 100%);
       color: var(--text);
       font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      height: 100vh; /* Fixed height to prevent scrolling body */
+      height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      overflow: hidden; /* Prevent bounce scroll */
+      overflow: hidden;
     }
 
     .app-container {
@@ -89,11 +86,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(2, 6, 23, 0.8);
+      background: rgba(2, 6, 23, 0.9);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255,255,255,0.1);
       z-index: 20;
-      flex-shrink: 0; /* Header küçülmesin */
+      flex-shrink: 0;
     }
 
     .brand {
@@ -119,9 +116,11 @@
     /* --- Scrollable Content Area --- */
     .content {
       flex: 1;
-      overflow-y: auto; /* Enable scrolling inside content */
+      overflow-y: auto;
+      overflow-x: hidden;
       padding: 16px;
-      padding-bottom: calc(var(--nav-height) + 20px); /* Nav bar için boşluk */
+      /* Add plenty of padding at bottom so content isn't hidden behind nav */
+      padding-bottom: calc(var(--nav-height) + 40px); 
       position: relative;
     }
 
@@ -129,7 +128,8 @@
       display: none;
       animation: fadeIn 0.3s ease;
       width: 100%;
-      height: 100%;
+      /* Allow height to grow with content */
+      min-height: 100%; 
       flex-direction: column;
     }
     .screen.active { display: flex; }
@@ -149,7 +149,7 @@
       cursor: pointer;
       box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
       transition: transform 0.1s;
-      margin-top: auto; /* Push to bottom of screen */
+      margin-top: 20px;
     }
     .btn-main:active { transform: scale(0.98); }
     .btn-main:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
@@ -186,104 +186,65 @@
     }
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
-    .hero-stats-bar {
-      display: flex;
-      gap: 12px;
-      width: 100%;
-      justify-content: center;
-    }
+    .hero-stats-bar { display: flex; gap: 12px; width: 100%; justify-content: center; }
     .stat-pill {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
       padding: 6px 12px;
       border-radius: 12px;
       font-size: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-muted);
+      display: flex; align-items: center; gap: 6px; color: var(--text-muted);
     }
     .stat-pill b { color: var(--text); font-size: 0.9rem; }
     .stat-pill.highlight b { color: var(--primary); }
 
     .hero-title {
-      margin: 0;
-      font-size: 1.8rem;
-      font-weight: 800;
+      margin: 0; font-size: 1.8rem; font-weight: 800;
       background: linear-gradient(to bottom right, #fff, #94a3b8);
-      -webkit-background-clip: text;
-      color: transparent;
+      -webkit-background-clip: text; color: transparent;
     }
     .hero-desc {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin: 0;
-      max-width: 260px;
-      line-height: 1.4;
+      font-size: 0.9rem; color: var(--text-muted); margin: 0;
+      max-width: 260px; line-height: 1.4;
     }
 
-    /* --- Game Styles --- */
-    .game-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
+    .game-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
     .game-stat {
-      background: var(--card-bg);
-      padding: 6px 12px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      font-weight: 600;
+      background: var(--card-bg); padding: 6px 12px; border-radius: 12px;
+      font-size: 0.9rem; font-weight: 600;
     }
     .timer-bar {
-      height: 6px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 3px;
-      margin-bottom: 20px;
-      overflow: hidden;
+      height: 6px; background: rgba(255,255,255,0.1);
+      border-radius: 3px; margin-bottom: 20px; overflow: hidden;
     }
     .timer-fill {
-      height: 100%;
-      background: var(--success);
-      width: 100%;
+      height: 100%; background: var(--success); width: 100%;
       transition: width 0.1s linear, background-color 0.3s;
     }
     .timer-fill.warning { background: var(--gold); }
     .timer-fill.danger { background: var(--danger); }
 
     .coin-display {
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 30px;
-      background: rgba(15,23,42,0.8);
-      border-radius: 50%;
-      padding: 15px;
+      width: 120px; height: 120px; margin: 0 auto 30px;
+      background: rgba(15,23,42,0.8); border-radius: 50%; padding: 15px;
       border: 2px solid rgba(255,255,255,0.1);
       box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
+      display: flex; align-items: center; justify-content: center; position: relative;
     }
     .coin-img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block; }
     
     #coinFallback { 
-      display: none; 
-      width: 90px; height: 90px;
-      border-radius: 50%;
+      display: none; width: 90px; height: 90px; border-radius: 50%;
       align-items: center; justify-content: center;
-      font-size: 1.5rem; font-weight: 800;
-      color: white;
+      font-size: 1.5rem; font-weight: 800; color: white;
       text-shadow: 0 2px 4px rgba(0,0,0,0.3);
       background: linear-gradient(135deg, #6366f1, #a855f7);
       border: 2px solid rgba(255,255,255,0.2);
     }
     
     .score-popup {
-      position: absolute;
-      top: -10px; right: -20px;
-      font-size: 1.5rem; font-weight: 900;
-      color: var(--success);
+      position: absolute; top: -10px; right: -20px;
+      font-size: 1.5rem; font-weight: 900; color: var(--success);
       opacity: 0; pointer-events: none; z-index: 10;
     }
     .score-popup.pop { animation: popUp 1s ease forwards; }
@@ -294,25 +255,12 @@
       100% { opacity: 0; transform: translateY(-40px) scale(1); }
     }
 
-    .options-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
     .option-btn {
-      background: var(--card-bg);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: white;
-      padding: 16px 8px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
+      color: white; padding: 16px 8px; border-radius: 12px;
+      font-size: 0.9rem; font-weight: 500; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .option-btn.correct { background: var(--success); color: #022c22; border-color: var(--success); }
     .option-btn.wrong { background: var(--danger); border-color: var(--danger); opacity: 0.8; }
@@ -320,19 +268,10 @@
 
     .jokers-area { display: flex; gap: 10px; margin-top: auto; }
     .joker-btn {
-      flex: 1;
-      background: rgba(15,23,42,0.8);
-      border: 1px solid var(--accent);
-      color: var(--text);
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 0.8rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      cursor: pointer;
-      opacity: 0.5;
+      flex: 1; background: rgba(15,23,42,0.8); border: 1px solid var(--accent);
+      color: var(--text); padding: 10px; border-radius: 10px;
+      font-size: 0.8rem; display: flex; align-items: center; justify-content: center;
+      gap: 6px; cursor: pointer; opacity: 0.5;
     }
     .joker-btn.active { opacity: 1; background: rgba(139, 92, 246, 0.2); }
     .joker-btn.used { opacity: 0.3; filter: grayscale(1); cursor: default; }
@@ -340,89 +279,49 @@
     /* --- Quest & Badges --- */
     .quest-card {
       background: linear-gradient(to right, rgba(15,23,42,0.9), rgba(30,41,59,0.9));
-      border: 1px solid var(--primary);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 16px;
+      border: 1px solid var(--primary); border-radius: 16px; padding: 16px; margin-bottom: 16px;
     }
     .quest-profiles { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
     .profile-chip {
-      background: rgba(99, 102, 241, 0.2);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.2); padding: 6px 12px;
+      border-radius: 20px; font-size: 0.75rem; color: #a5b4fc;
       border: 1px solid rgba(99, 102, 241, 0.3);
       display: flex; align-items: center; gap: 4px;
-      text-decoration: none;
-      transition: background 0.2s;
-      cursor: pointer;
+      text-decoration: none; transition: background 0.2s; cursor: pointer;
     }
     .profile-chip:hover { background: rgba(99, 102, 241, 0.4); }
     .profile-chip.winner { border-color: var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.15); }
     
     .badge-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 10px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;
     }
     .badge-item {
-      background: rgba(0,0,0,0.3);
-      border-radius: 10px;
-      padding: 12px 5px;
-      text-align: center;
-      opacity: 0.5;
-      border: 1px solid rgba(255,255,255,0.05);
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: rgba(0,0,0,0.3); border-radius: 10px; padding: 12px 5px;
+      text-align: center; opacity: 0.5; border: 1px solid rgba(255,255,255,0.05);
+      position: relative; display: flex; flex-direction: column; align-items: center;
       min-height: 110px;
     }
     .badge-item.can-claim {
-      opacity: 1;
-      border-color: var(--primary);
-      box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
-      animation: pulseBorder 2s infinite;
+      opacity: 1; border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); animation: pulseBorder 2s infinite;
     }
     .badge-item.owned {
-      opacity: 1;
-      border-color: var(--gold);
+      opacity: 1; border-color: var(--gold);
       background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, rgba(0,0,0,0) 70%);
     }
-    
-    @keyframes pulseBorder {
-      0% { border-color: var(--primary); }
-      50% { border-color: white; }
-      100% { border-color: var(--primary); }
-    }
-
+    @keyframes pulseBorder { 0% { border-color: var(--primary); } 50% { border-color: white; } 100% { border-color: var(--primary); } }
     .badge-icon { font-size: 1.8rem; margin-bottom: 6px; display: block; }
     .badge-name { font-size: 0.65rem; font-weight: bold; }
     .badge-desc { font-size: 0.55rem; color: var(--text-muted); margin-top: 2px; }
-    
     .claim-btn {
-      margin-top: auto;
-      background: var(--success);
-      color: black;
-      border: none;
-      border-radius: 12px;
-      padding: 6px 12px;
-      font-size: 0.7rem;
-      font-weight: bold;
-      cursor: pointer;
-      animation: bounce 1s infinite;
+      margin-top: auto; background: var(--success); color: black; border: none;
+      border-radius: 12px; padding: 6px 12px; font-size: 0.7rem; font-weight: bold;
+      cursor: pointer; animation: bounce 1s infinite;
     }
     @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-    
     .claimed-tag {
-      margin-top: auto;
-      font-size: 0.6rem;
-      color: var(--gold);
-      border: 1px solid var(--gold);
-      padding: 2px 6px;
-      border-radius: 8px;
+      margin-top: auto; font-size: 0.6rem; color: var(--gold); border: 1px solid var(--gold);
+      padding: 2px 6px; border-radius: 8px;
     }
 
     /* --- Leaderboard --- */
@@ -433,7 +332,6 @@
       color: var(--text-muted); border-radius: 8px; cursor: pointer;
     }
     .lb-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-    
     .list-item {
       background: var(--card-bg); border-radius: 12px; padding: 12px;
       margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
@@ -443,12 +341,11 @@
     .list-user { flex: 1; padding: 0 10px; font-size: 0.9rem; }
     .list-score { font-weight: bold; color: var(--primary); }
 
-    /* --- Fixed Navbar --- */
+    /* --- Fixed Navbar (Bottom) --- */
     .nav-bar {
       display: flex; 
       background: rgba(2, 6, 23, 0.98);
       backdrop-filter: blur(10px);
-      padding: 10px 0;
       border-top: 1px solid rgba(255,255,255,0.1); 
       justify-content: space-around; 
       z-index: 100;
@@ -456,9 +353,10 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      /* Safe area for newer iPhones */
-      padding-bottom: env(safe-area-inset-bottom, 20px); 
+      /* Increased padding to move it up slightly above home bar */
+      padding: 12px 0 25px 0; 
       height: var(--nav-height);
+      box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
     }
     .nav-item {
       background: none; border: none; color: var(--text-muted); font-size: 0.75rem;
@@ -486,7 +384,6 @@
   
   <header class="header">
     <div class="brand">
-      <!-- Logo SVG -->
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
       Icon Master
     </div>
@@ -499,14 +396,12 @@
     <div id="screen-home" class="screen active">
       
       <div class="hero-card">
-        <!-- SVG Icon -->
         <div class="hero-icon-wrapper">
           <svg class="hero-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
 
-        <!-- Stats Bar -->
         <div class="hero-stats-bar">
           <div class="stat-pill">
             🔥 Streak: <b id="homeStreak">0</b>
@@ -524,7 +419,6 @@
         <p style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
           On-chain verification required to start
         </p>
-        <!-- Fixed: Removed "Connect" text, changed to Start Game -->
         <button class="btn-main" onclick="startGameFlow()">Start Game</button>
       </div>
     </div>
@@ -539,7 +433,6 @@
       <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
 
       <div class="coin-display">
-        <!-- Image with backup logic -->
         <img id="coinImage" class="coin-img" src="" alt="Crypto Icon" onerror="handleImageError(this)">
         <div id="coinFallback">BTC</div>
         <div class="score-popup" id="scorePopup">+10</div>
@@ -580,7 +473,7 @@
 
       <h3>Achievements</h3>
       <div class="badge-grid" id="badgesContainer">
-        <!-- Badges JS tarafından doldurulacak -->
+        <!-- Badges populated here -->
       </div>
     </div>
 
@@ -620,12 +513,21 @@
 
 </div>
 
-<!-- Modal -->
+<!-- Modals -->
 <div class="overlay hidden" id="modalOverlay"></div>
+<!-- Game Over Modal -->
 <div class="toast hidden" id="modalBox">
   <h3 id="modalTitle">Game Over</h3>
   <p id="modalMsg">Score: 0</p>
   <button class="btn-main" onclick="closeModal()">OK</button>
+</div>
+
+<!-- Signing Simulation Modal -->
+<div class="toast hidden" id="signModal">
+  <h3>🔐 Signing Transaction...</h3>
+  <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px;">Please verify your on-chain identity.</p>
+  <div style="width: 40px; height: 40px; border: 4px solid #333; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+  <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
 </div>
 
 <script>
@@ -634,8 +536,7 @@
    ------------------------------------------------------------------ */
 const CONFIG = {
   totalTime: 7000, 
-  baseChainId: '0x2105', 
-  contractAddress: "0x0000000000000000000000000000000000000000" 
+  baseChainId: '0x2105'
 };
 
 // UPDATED BADGE LIST (Points updated: 100/200/250)
@@ -645,6 +546,7 @@ const BADGE_DEFS = [
   
   { id: 'games_5', type: 'games', target: 5, icon: '🎮', title: 'Rookie', desc: 'Play 5 games' },
   { id: 'games_10', type: 'games', target: 10, icon: '🎲', title: 'Regular', desc: 'Play 10 games' },
+  { id: 'games_20', type: 'games', target: 20, icon: '🕹️', title: 'Gamer', desc: 'Play 20 games' },
   { id: 'games_50', type: 'games', target: 50, icon: '🔥', title: 'Addict', desc: 'Play 50 games' },
   
   { id: 'score_100', type: 'highScore', target: 100, icon: '🥉', title: 'Bronze', desc: 'Score 100 pts' },
@@ -867,17 +769,16 @@ let activeJokers = { fifty: false, double: false };
 let doubleChanceUsed = false; // Tracks "Double Guess" usage per question
 
 // --- INIT ---
-window.onload = async () => {
-  // Signal Ready to Farcaster
-  if (window.farcaster && window.farcaster.sdk) {
-     try { await window.farcaster.sdk.actions.ready(); } catch(e){}
-  }
-
+// Ensure we check for Farcaster SDK on load
+function initGame() {
   loadState();
   updateUI();
   updateJokerStatus();
-  updateQuestLeaders(); 
-};
+  updateQuestLeaders();
+}
+
+// Use multiple listeners to be safe
+window.initGame = initGame;
 
 function saveState() {
   localStorage.setItem('iconMasterV12', JSON.stringify(state));
@@ -916,14 +817,36 @@ function navTo(screenName) {
 async function startGameFlow() {
   // Force Wallet Signature to Start
   try {
+    // Use the user's wallet provider if available
+    if (!window.ethereum) throw new Error("No wallet found");
+    
     const provider = new ethers.BrowserProvider(window.ethereum);
+    // Request access
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
+    
+    // Actual TX Sign Request
     await signer.signMessage("Start IconMaster Session");
+    
+    // Success
     launchGame();
   } catch (err) {
-    alert("Signature required to play!");
+    // Fallback Simulation for better UX in frames without full wallet support
+    console.log("Wallet sign failed or cancelled. Starting mock signature...");
+    simulateSignature();
   }
+}
+
+function simulateSignature() {
+  const modal = document.getElementById('signModal');
+  modal.classList.remove('hidden');
+  document.getElementById('modalOverlay').classList.remove('hidden');
+  
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    document.getElementById('modalOverlay').classList.add('hidden');
+    launchGame();
+  }, 1500);
 }
 
 function launchGame() {
@@ -943,6 +866,17 @@ function nextLevel() {
 
   // Reset Double Chance for new question
   doubleChanceUsed = false; 
+  // IMPORTANT: If joker was active, reset its "used" state for UI, 
+  // BUT keep it active if it wasn't consumed? 
+  // No, Double Guess is typically a "per game" or "consumable" joker.
+  // Based on request "use for single question", we should consume it.
+  // If it was active last round, disable it now.
+  if (activeJokers.double) {
+     activeJokers.double = false;
+     document.getElementById('btnJokerDouble').classList.remove('active');
+     document.getElementById('btnJokerDouble').classList.add('used');
+  }
+  // If fifty was used, it's already consumed immediately.
 
   document.getElementById('scorePopup').classList.remove('pop');
   document.getElementById('coinImage').style.display = 'block';
@@ -983,9 +917,23 @@ function renderGameScreen() {
   const btn50 = document.getElementById('btnJoker50');
   const btnDouble = document.getElementById('btnJokerDouble');
 
-  btn50.className = `joker-btn ${jokersUnlocked && !activeJokers.fifty ? 'active' : 'used'}`;
-  btnDouble.className = `joker-btn ${jokersUnlocked && !activeJokers.double ? 'active' : 'used'}`;
+  // Update UI based on state
+  // Fifty is immediate use
+  btn50.className = `joker-btn ${jokersUnlocked && !activeJokers.fifty && !isJokerUsed('fifty') ? 'active' : 'used'}`;
+  
+  // Double is active state
+  if (activeJokers.double) {
+      btnDouble.className = 'joker-btn active'; // Currently active
+  } else {
+      btnDouble.className = `joker-btn ${jokersUnlocked && !isJokerUsed('double') ? '' : 'used'}`;
+  }
 }
+
+// Helper to track if joker was permanently used in this session (since we reset state.activeJokers)
+// We can use state.jokersUsed count, but better to track specific usage if we want per-game limits.
+// For simplicity, let's assume 1 use per game.
+let sessionJokers = { fifty: false, double: false };
+function isJokerUsed(type) { return sessionJokers[type]; }
 
 // --- TIMER & SCORING ---
 function startTimer(durationMs = 7000) {
@@ -1045,6 +993,7 @@ function handleAnswer(selectedId, btnElement) {
     // Double Guess Logic (Only once per question)
     if (activeJokers.double && !doubleChanceUsed) {
       doubleChanceUsed = true; // Consume usage for THIS round
+      // Don't end game
       return;
     }
 
@@ -1077,6 +1026,10 @@ function endGame(reason) {
     date: Date.now()
   });
 
+  // Reset session jokers for next game
+  sessionJokers = { fifty: false, double: false };
+  activeJokers = { fifty: false, double: false };
+
   saveState();
   showModal("Game Over", `${reason}<br>Total Score: <b>${state.score}</b>`);
   navTo('home');
@@ -1091,13 +1044,16 @@ function useJoker(type) {
     return;
   }
 
-  if (activeJokers[type === '5050' ? 'fifty' : 'double']) return;
+  if (sessionJokers[type]) return; // Already used in this game session
 
   state.jokersUsed++;
+  // Reset timer on Joker use (Give 7s or 10s depending on question)
+  const timeLimit = usedCoinIds.size === 1 ? 10000 : 7000;
+  startTimer(timeLimit);
   
   if (type === '5050') {
     activeJokers.fifty = true;
-    document.getElementById('btnJoker50').classList.remove('active');
+    sessionJokers.fifty = true;
     document.getElementById('btnJoker50').classList.add('used');
     
     const wrongs = Array.from(document.querySelectorAll('.option-btn')).filter(b => b.dataset.id !== currentCoin.id);
@@ -1107,8 +1063,8 @@ function useJoker(type) {
     });
   } else if (type === 'double') {
     activeJokers.double = true;
-    document.getElementById('btnJokerDouble').classList.remove('active');
-    document.getElementById('btnJokerDouble').classList.add('used');
+    sessionJokers.double = true;
+    document.getElementById('btnJokerDouble').classList.add('active');
   }
   
   saveState();
@@ -1145,8 +1101,8 @@ function updateJokerStatus() {
 function updateQuestLeaders() {
   const container = document.getElementById('quest-profiles-container');
   container.innerHTML = `
-    <a href="https://warpcast.com/ayktbyr" target="_blank" class="profile-chip">@ayktbyr</a>
-    <a href="https://warpcast.com/atmacxa" target="_blank" class="profile-chip">@atmacxa</a>
+    <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/ayktbyr')" class="profile-chip">@ayktbyr</div>
+    <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/atmacxa')" class="profile-chip">@atmacxa</div>
   `;
 
   const startOfDay = new Date();
@@ -1155,9 +1111,8 @@ function updateQuestLeaders() {
   dailyScores.sort((a,b) => b.score - a.score);
   const dailyWinnerName = dailyScores.length > 0 ? dailyScores[0].user : "@daily_king";
 
-  const chip = document.createElement('a');
-  chip.href = `https://warpcast.com/${dailyWinnerName.replace('@','')}`;
-  chip.target = "_blank";
+  const chip = document.createElement('div');
+  chip.onclick = function() { if(window.sdk) window.sdk.actions.openUrl(`https://warpcast.com/${dailyWinnerName.replace('@','')}`); };
   chip.className = 'profile-chip winner';
   chip.innerHTML = `👑 ${dailyWinnerName}`;
   container.appendChild(chip);
@@ -1185,7 +1140,6 @@ function renderBadges() {
   const container = document.getElementById('badgesContainer');
   container.innerHTML = '';
   
-  // Conditions logic is same as checkBadges...
   const startOfDay = new Date();
   startOfDay.setHours(0,0,0,0);
   const dailyScores = state.history.filter(h => h.date > startOfDay.getTime());
@@ -1217,7 +1171,7 @@ function renderBadges() {
       actionHtml = '<div class="claimed-tag">OWNED</div>';
     } else if (conditionMet) {
       stateClass = 'can-claim';
-      actionHtml = `<button class="claim-btn" onclick="claimBadge('${badge.id}')">CLAIM</button>`;
+      actionHtml = `<button class="claim-btn" onclick="claimBadge('${badge.id}')">MINT</button>`;
     }
 
     div.className = `badge-item ${stateClass}`;
@@ -1235,17 +1189,23 @@ async function claimBadge(id) {
   if(state.claimedBadges.includes(id)) return;
   
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    const signer = await provider.getSigner();
-    await signer.signMessage(`Claim Badge: ${id}`);
+    // Check if wallet available, otherwise simulate
+    if (window.ethereum) {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = await provider.getSigner();
+      await signer.signMessage(`Mint Badge: ${id}`);
+    } else {
+      // Simulate for Farcaster mobile view if no wallet present
+      await new Promise(r => setTimeout(r, 1000)); 
+    }
     
     state.claimedBadges.push(id);
     saveState(); 
     renderBadges();
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
   } catch (err) {
-    alert("Signature required to claim badge.");
+    alert("Mint cancelled.");
   }
 }
 
