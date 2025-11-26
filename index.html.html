@@ -19,6 +19,7 @@
   <meta property="og:description" content="Race against time. Guess 250+ crypto icons. Become the Daily King!" />
   <meta property="og:image" content="https://icon-master-demo.vercel.app/og-image.png" />
 
+  <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
@@ -438,6 +439,28 @@
     .hidden { display: none !important; }
 
   </style>
+  
+  <!-- 
+    FARCASTER SDK ENTEGRASYONU (YENİ EKLENDİ)
+    Frame v2 için gerekli olan SDK yükleme ve "ready" sinyali.
+  -->
+  <script type="module">
+    import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
+    
+    // Sayfa yüklendiğinde SDK'ya "hazırım" sinyali gönder
+    window.onload = async () => {
+      try {
+        await sdk.actions.ready();
+        console.log("Farcaster SDK Ready!");
+      } catch (err) {
+        console.error("Farcaster SDK Error:", err);
+      }
+      
+      // Oyunun kendi init fonksiyonlarını da çalıştır
+      if(typeof window.gameInit === 'function') window.gameInit();
+    };
+  </script>
+
 </head>
 <body>
 
@@ -587,7 +610,7 @@
 
 <script>
 /* ------------------------------------------------------------------
-   ICON MASTER V10 CONFIG & DATA
+   ICON MASTER V11 CONFIG & DATA
    ------------------------------------------------------------------ */
 const CONFIG = {
   totalTime: 7000, 
@@ -595,11 +618,8 @@ const CONFIG = {
   contractAddress: "0x0000000000000000000000000000000000000000" 
 };
 
-// UPDATED BADGE LIST
+// Genişletilmiş Rozet Listesi
 const BADGE_DEFS = [
-  { id: 'daily_1', type: 'rank_daily', target: 1, icon: '🥇', title: 'Daily King', desc: 'Rank #1 Daily' },
-  { id: 'alltime_10', type: 'rank_all', target: 10, icon: '🌟', title: 'Top 10 Elite', desc: 'Top 10 All Time' },
-  
   { id: 'games_5', type: 'games', target: 5, icon: '🎮', title: 'Rookie', desc: 'Play 5 games' },
   { id: 'games_10', type: 'games', target: 10, icon: '🎲', title: 'Regular', desc: 'Play 10 games' },
   { id: 'games_20', type: 'games', target: 20, icon: '🕹️', title: 'Gamer', desc: 'Play 20 games' },
@@ -609,10 +629,15 @@ const BADGE_DEFS = [
   { id: 'score_250', type: 'highScore', target: 250, icon: '🥈', title: 'Silver', desc: 'Score 250 pts' },
   { id: 'score_500', type: 'highScore', target: 500, icon: '🥇', title: 'Gold', desc: 'Score 500 pts' },
   
-  { id: 'joker_10', type: 'jokers', target: 10, icon: '🃏', title: 'Trickster', desc: 'Use 10 jokers' }
+  { id: 'joker_10', type: 'jokers', target: 10, icon: '🃏', title: 'Trickster', desc: 'Use 10 jokers' },
+  { id: 'joker_50', type: 'jokers', target: 50, icon: '🎭', title: 'Master', desc: 'Use 50 jokers' },
+  
+  // New Rank Badges
+  { id: 'daily_1', type: 'rank_daily', target: 1, icon: '🥇', title: 'Daily King', desc: 'Rank #1 Daily' },
+  { id: 'alltime_10', type: 'rank_all', target: 10, icon: '🌟', title: 'Top 10 Elite', desc: 'Top 10 All Time' }
 ];
 
-// 250 COIN DATABASE
+// 250 COIN DATABASE (Same as V9)
 const COIN_DB = [
   {id: "bitcoin", symbol: "btc", name: "Bitcoin", img: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png"},
   {id: "ethereum", symbol: "eth", name: "Ethereum", img: "https://assets.coingecko.com/coins/images/279/large/ethereum.png"},
@@ -826,6 +851,11 @@ let doubleChanceUsed = false;
 
 // --- INIT ---
 window.onload = () => {
+  // Farcaster SDK "Ready" Signal
+  if (window.farcaster && window.farcaster.sdk) {
+     window.farcaster.sdk.actions.ready();
+  }
+
   loadState();
   updateUI();
   updateJokerStatus();
