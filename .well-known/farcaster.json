@@ -1,8 +1,8 @@
 {
   "accountAssociation": {
-    "header": "WARPCASTTEN_ALDIGIN_HEADER_KODU",
-    "payload": "WARPCASTTEN_ALDIGIN_PAYLOAD_KODU",
-    "signature": "WARPCASTTEN_ALDIGIN_SIGNATURE_KODU"
+    "header": "eyJmaWQiOjM4ODM2NSwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDAxODYzRENBRjJFMzc4NThGMjk3RTJlNDAyNzhjNDk1QjNhOUNGNDEifQ",
+    "payload": "eyJkb21haW4iOiJpbmRleC1odG1sLW9uZS1wc2kudmVyY2VsLmFwcCJ9",
+    "signature": "6eJaS3aEg9pY5kqM0HLrtaTSmuCuCPFeCA4UsQsU9fNJaOCTeslWgAQL49/GpAm/HKkM5Q32BACOW+AVCZXlqRw="
   },
   "frame": {
     "version": "1",
