@@ -3,16 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <title>Icon Master - Farcaster Crypto Quiz</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  
-  <!-- FARCASTER METADATA -->
-  <meta property="fc:frame" content="vNext" />
-  <meta property="fc:frame:image" content="https://icon-master-demo.vercel.app/og-image.png" />
-  <meta property="fc:frame:button:1" content="Play Icon Master" />
-  <meta property="fc:frame:button:1:action" content="launch_frame" />
-  <meta property="fc:frame:button:1:name" content="Icon Master" />
-  <meta property="fc:frame:button:1:splash_image_url" content="https://icon-master-demo.vercel.app/splash.png" />
-  <meta property="fc:frame:button:1:splash_background_color" content="#0f172a" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+
+  <!-- FARCASTER METADATA (JSON Format for better compatibility) -->
+  <meta property="fc:frame" content='{"version":"next","imageUrl":"https://icon-master-demo.vercel.app/og-image.png","button":{"title":"Play Icon Master","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://icon-master-demo.vercel.app/splash.png","splashBackgroundColor":"#0f172a"}}}' />
   
   <!-- Open Graph -->
   <meta property="og:title" content="Icon Master" />
@@ -23,6 +18,34 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
+  <!-- Farcaster SDK -->
+  <script type="module">
+    import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
+    
+    window.onload = async () => {
+      // Initialize Game Data from LocalStorage
+      loadState();
+      updateUI();
+      updateJokerStatus();
+      updateQuestLeaders();
+
+      // Signal Ready to Farcaster
+      try {
+        await sdk.actions.ready();
+        console.log("Farcaster SDK Ready!");
+        
+        // Auto-connect context if available (simulated here, real app would use sdk.context)
+        const context = await sdk.context;
+        if(context && context.user) {
+           // In a real app, we'd use the real Farcaster username here
+           // state.currentUser = context.user.username; 
+        }
+      } catch (err) {
+        console.error("SDK Error:", err);
+      }
+    };
+  </script>
+
   <style>
     :root {
       --bg-color: #0f172a;
@@ -34,6 +57,7 @@
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --gold: #fbbf24;
+      --nav-height: 70px; /* Fixed height for nav bar */
     }
 
     * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -43,17 +67,17 @@
       background: radial-gradient(circle at center top, #1e293b 0%, #020617 100%);
       color: var(--text);
       font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
+      height: 100vh; /* Fixed height to prevent scrolling body */
       display: flex;
       flex-direction: column;
       align-items: center;
-      overflow-x: hidden;
+      overflow: hidden; /* Prevent bounce scroll */
     }
 
     .app-container {
       width: 100%;
       max-width: 480px;
-      min-height: 100vh;
+      height: 100%;
       position: relative;
       background: rgba(15, 23, 42, 0.5);
       display: flex;
@@ -68,9 +92,8 @@
       background: rgba(2, 6, 23, 0.8);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255,255,255,0.1);
-      position: sticky;
-      top: 0;
       z-index: 20;
+      flex-shrink: 0; /* Header küçülmesin */
     }
 
     .brand {
@@ -93,11 +116,12 @@
     }
     .personal-best span { color: var(--gold); font-weight: bold; }
 
+    /* --- Scrollable Content Area --- */
     .content {
       flex: 1;
+      overflow-y: auto; /* Enable scrolling inside content */
       padding: 16px;
-      display: flex;
-      flex-direction: column;
+      padding-bottom: calc(var(--nav-height) + 20px); /* Nav bar için boşluk */
       position: relative;
     }
 
@@ -112,6 +136,7 @@
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
+    /* --- UI Components --- */
     .btn-main {
       background: linear-gradient(90deg, var(--primary), var(--accent));
       color: white;
@@ -124,6 +149,7 @@
       cursor: pointer;
       box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
       transition: transform 0.1s;
+      margin-top: auto; /* Push to bottom of screen */
     }
     .btn-main:active { transform: scale(0.98); }
     .btn-main:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
@@ -196,6 +222,7 @@
       line-height: 1.4;
     }
 
+    /* --- Game Styles --- */
     .game-header {
       display: flex;
       justify-content: space-between;
@@ -321,13 +348,17 @@
     .quest-profiles { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
     .profile-chip {
       background: rgba(99, 102, 241, 0.2);
-      padding: 4px 10px;
+      padding: 6px 12px;
       border-radius: 20px;
       font-size: 0.75rem;
       color: #a5b4fc;
       border: 1px solid rgba(99, 102, 241, 0.3);
       display: flex; align-items: center; gap: 4px;
+      text-decoration: none;
+      transition: background 0.2s;
+      cursor: pointer;
     }
+    .profile-chip:hover { background: rgba(99, 102, 241, 0.4); }
     .profile-chip.winner { border-color: var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.15); }
     
     .badge-grid {
@@ -335,9 +366,6 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       margin-top: 10px;
-      overflow-y: auto;
-      max-height: 400px;
-      padding-bottom: 40px;
     }
     .badge-item {
       background: rgba(0,0,0,0.3);
@@ -350,7 +378,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100px;
+      min-height: 110px;
     }
     .badge-item.can-claim {
       opacity: 1;
@@ -380,7 +408,7 @@
       color: black;
       border: none;
       border-radius: 12px;
-      padding: 4px 10px;
+      padding: 6px 12px;
       font-size: 0.7rem;
       font-weight: bold;
       cursor: pointer;
@@ -415,16 +443,28 @@
     .list-user { flex: 1; padding: 0 10px; font-size: 0.9rem; }
     .list-score { font-weight: bold; color: var(--primary); }
 
-    /* --- Navbar --- */
+    /* --- Fixed Navbar --- */
     .nav-bar {
-      display: flex; background: rgba(2, 6, 23, 0.95); padding: 10px;
-      border-top: 1px solid rgba(255,255,255,0.1); justify-content: space-around; z-index: 20;
+      display: flex; 
+      background: rgba(2, 6, 23, 0.98);
+      backdrop-filter: blur(10px);
+      padding: 10px 0;
+      border-top: 1px solid rgba(255,255,255,0.1); 
+      justify-content: space-around; 
+      z-index: 100;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      /* Safe area for newer iPhones */
+      padding-bottom: env(safe-area-inset-bottom, 20px); 
+      height: var(--nav-height);
     }
     .nav-item {
-      background: none; border: none; color: var(--text-muted); font-size: 0.7rem;
+      background: none; border: none; color: var(--text-muted); font-size: 0.75rem;
       display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer;
     }
-    .nav-item svg { width: 22px; height: 22px; fill: currentColor; }
+    .nav-item svg { width: 24px; height: 24px; fill: currentColor; }
     .nav-item.active { color: var(--primary); }
 
     /* --- Modal --- */
@@ -439,28 +479,6 @@
     .hidden { display: none !important; }
 
   </style>
-  
-  <!-- 
-    FARCASTER SDK ENTEGRASYONU (YENİ EKLENDİ)
-    Frame v2 için gerekli olan SDK yükleme ve "ready" sinyali.
-  -->
-  <script type="module">
-    import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
-    
-    // Sayfa yüklendiğinde SDK'ya "hazırım" sinyali gönder
-    window.onload = async () => {
-      try {
-        await sdk.actions.ready();
-        console.log("Farcaster SDK Ready!");
-      } catch (err) {
-        console.error("Farcaster SDK Error:", err);
-      }
-      
-      // Oyunun kendi init fonksiyonlarını da çalıştır
-      if(typeof window.gameInit === 'function') window.gameInit();
-    };
-  </script>
-
 </head>
 <body>
 
@@ -506,7 +524,8 @@
         <p style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
           On-chain verification required to start
         </p>
-        <button class="btn-main" onclick="startGameFlow()">Connect & Play</button>
+        <!-- Fixed: Removed "Connect" text, changed to Start Game -->
+        <button class="btn-main" onclick="startGameFlow()">Start Game</button>
       </div>
     </div>
 
@@ -583,6 +602,7 @@
 
   </div>
 
+  <!-- FIXED NAV BAR -->
   <nav class="nav-bar">
     <button class="nav-item active" onclick="navTo('home')">
       <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -610,7 +630,7 @@
 
 <script>
 /* ------------------------------------------------------------------
-   ICON MASTER V11 CONFIG & DATA
+   ICON MASTER V12 CONFIG & DATA
    ------------------------------------------------------------------ */
 const CONFIG = {
   totalTime: 7000, 
@@ -618,26 +638,23 @@ const CONFIG = {
   contractAddress: "0x0000000000000000000000000000000000000000" 
 };
 
-// Genişletilmiş Rozet Listesi
+// UPDATED BADGE LIST (Points updated: 100/200/250)
 const BADGE_DEFS = [
+  { id: 'daily_1', type: 'rank_daily', target: 1, icon: '🥇', title: 'Daily King', desc: 'Rank #1 Daily' },
+  { id: 'alltime_10', type: 'rank_all', target: 10, icon: '🌟', title: 'Top 10 Elite', desc: 'Top 10 All Time' },
+  
   { id: 'games_5', type: 'games', target: 5, icon: '🎮', title: 'Rookie', desc: 'Play 5 games' },
   { id: 'games_10', type: 'games', target: 10, icon: '🎲', title: 'Regular', desc: 'Play 10 games' },
-  { id: 'games_20', type: 'games', target: 20, icon: '🕹️', title: 'Gamer', desc: 'Play 20 games' },
   { id: 'games_50', type: 'games', target: 50, icon: '🔥', title: 'Addict', desc: 'Play 50 games' },
   
   { id: 'score_100', type: 'highScore', target: 100, icon: '🥉', title: 'Bronze', desc: 'Score 100 pts' },
-  { id: 'score_250', type: 'highScore', target: 250, icon: '🥈', title: 'Silver', desc: 'Score 250 pts' },
-  { id: 'score_500', type: 'highScore', target: 500, icon: '🥇', title: 'Gold', desc: 'Score 500 pts' },
+  { id: 'score_200', type: 'highScore', target: 200, icon: '🥈', title: 'Silver', desc: 'Score 200 pts' },
+  { id: 'score_250', type: 'highScore', target: 250, icon: '🥇', title: 'Gold', desc: 'Score 250 pts' },
   
-  { id: 'joker_10', type: 'jokers', target: 10, icon: '🃏', title: 'Trickster', desc: 'Use 10 jokers' },
-  { id: 'joker_50', type: 'jokers', target: 50, icon: '🎭', title: 'Master', desc: 'Use 50 jokers' },
-  
-  // New Rank Badges
-  { id: 'daily_1', type: 'rank_daily', target: 1, icon: '🥇', title: 'Daily King', desc: 'Rank #1 Daily' },
-  { id: 'alltime_10', type: 'rank_all', target: 10, icon: '🌟', title: 'Top 10 Elite', desc: 'Top 10 All Time' }
+  { id: 'joker_10', type: 'jokers', target: 10, icon: '🃏', title: 'Trickster', desc: 'Use 10 jokers' }
 ];
 
-// 250 COIN DATABASE (Same as V9)
+// 250 COIN DATABASE
 const COIN_DB = [
   {id: "bitcoin", symbol: "btc", name: "Bitcoin", img: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png"},
   {id: "ethereum", symbol: "eth", name: "Ethereum", img: "https://assets.coingecko.com/coins/images/279/large/ethereum.png"},
@@ -833,7 +850,7 @@ let state = {
   bestScore: 0,
   jokersUnlockedUntil: 0,
   claimedBadges: [], 
-  dailyWinner: null, // Holds {user, score} for the current daily leader
+  dailyWinner: null, 
   history: [
     {user: "@ayktbyr", score: 150, date: Date.now() - 10000},
     {user: "@atmacxa", score: 142, date: Date.now() - 20000}
@@ -847,13 +864,13 @@ let gameTimer = null;
 let timerStart = 0;
 let usedCoinIds = new Set();
 let activeJokers = { fifty: false, double: false };
-let doubleChanceUsed = false;
+let doubleChanceUsed = false; // Tracks "Double Guess" usage per question
 
 // --- INIT ---
-window.onload = () => {
-  // Farcaster SDK "Ready" Signal
+window.onload = async () => {
+  // Signal Ready to Farcaster
   if (window.farcaster && window.farcaster.sdk) {
-     window.farcaster.sdk.actions.ready();
+     try { await window.farcaster.sdk.actions.ready(); } catch(e){}
   }
 
   loadState();
@@ -863,18 +880,19 @@ window.onload = () => {
 };
 
 function saveState() {
-  localStorage.setItem('iconMasterFinal', JSON.stringify(state));
+  localStorage.setItem('iconMasterV12', JSON.stringify(state));
   updateUI();
-  // Check Rank badges
   checkBadges();
 }
 
 function loadState() {
-  const saved = localStorage.getItem('iconMasterFinal');
+  const saved = localStorage.getItem('iconMasterV12');
   if (saved) {
     const parsed = JSON.parse(saved);
     state = {...state, ...parsed};
+    // Ensure arrays exist
     if(!state.claimedBadges) state.claimedBadges = [];
+    if(!state.lastWeekWinners) state.lastWeekWinners = ["@crypto_guru", "@nft_whale"];
   }
 }
 
@@ -887,7 +905,7 @@ function navTo(screenName) {
   const navIndex = ['home', 'quests', 'leaderboard'].indexOf(screenName);
   if(navIndex > -1) document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
   
-  if(screenName === 'leaderboard') renderLeaderboard('daily'); // Default to Daily
+  if(screenName === 'leaderboard') renderLeaderboard('daily');
   if(screenName === 'quests') {
     updateQuestLeaders();
     renderBadges();
@@ -896,16 +914,15 @@ function navTo(screenName) {
 
 // --- GAMEFLOW ---
 async function startGameFlow() {
+  // Force Wallet Signature to Start
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
-    // Prompt TX signature before every game
     await signer.signMessage("Start IconMaster Session");
     launchGame();
   } catch (err) {
-    console.warn("Wallet skip:", err);
-    launchGame(); // Allow play even if rejected for demo
+    alert("Signature required to play!");
   }
 }
 
@@ -924,7 +941,9 @@ function nextLevel() {
     return;
   }
 
-  doubleChanceUsed = false;
+  // Reset Double Chance for new question
+  doubleChanceUsed = false; 
+
   document.getElementById('scorePopup').classList.remove('pop');
   document.getElementById('coinImage').style.display = 'block';
   document.getElementById('coinFallback').style.display = 'none';
@@ -996,10 +1015,7 @@ function startTimer(durationMs = 7000) {
 
 function calculatePoints() {
   const elapsed = Date.now() - timerStart;
-  // Dynamic based on current question's max time (10s or 7s)
   const maxTime = usedCoinIds.size === 1 ? 10000 : 7000;
-  
-  // Scale points: Max 10, Min 1 based on time elapsed
   const points = Math.max(1, Math.ceil(10 * (1 - (elapsed / maxTime))));
   return points;
 }
@@ -1026,8 +1042,9 @@ function handleAnswer(selectedId, btnElement) {
     btnElement.classList.add('wrong');
     btnElement.disabled = true;
 
+    // Double Guess Logic (Only once per question)
     if (activeJokers.double && !doubleChanceUsed) {
-      doubleChanceUsed = true;
+      doubleChanceUsed = true; // Consume usage for THIS round
       return;
     }
 
@@ -1053,6 +1070,7 @@ function endGame(reason) {
   state.totalPoints += state.score;
   if (state.score > state.bestScore) state.bestScore = state.score;
   
+  // Add to history
   state.history.push({
     user: "You",
     score: state.score,
@@ -1076,9 +1094,6 @@ function useJoker(type) {
   if (activeJokers[type === '5050' ? 'fifty' : 'double']) return;
 
   state.jokersUsed++;
-  // Reset timer on Joker use (Give 7s or 10s depending on question)
-  const timeLimit = usedCoinIds.size === 1 ? 10000 : 7000;
-  startTimer(timeLimit);
   
   if (type === '5050') {
     activeJokers.fifty = true;
@@ -1105,7 +1120,7 @@ function verifyQuest() {
   btn.disabled = true;
 
   setTimeout(() => {
-    state.jokersUnlockedUntil = Date.now() + (24 * 60 * 60 * 1000); // 1 day unlock
+    state.jokersUnlockedUntil = Date.now() + (24 * 60 * 60 * 1000); 
     saveState();
     
     btn.innerText = "Verified! Jokers Unlocked";
@@ -1130,59 +1145,47 @@ function updateJokerStatus() {
 function updateQuestLeaders() {
   const container = document.getElementById('quest-profiles-container');
   container.innerHTML = `
-    <span class="profile-chip">@ayktbyr</span>
-    <span class="profile-chip">@atmacxa</span>
+    <a href="https://warpcast.com/ayktbyr" target="_blank" class="profile-chip">@ayktbyr</a>
+    <a href="https://warpcast.com/atmacxa" target="_blank" class="profile-chip">@atmacxa</a>
   `;
 
-  // Find Daily Leader (Simulated from local history)
   const startOfDay = new Date();
   startOfDay.setHours(0,0,0,0);
-  
   const dailyScores = state.history.filter(h => h.date > startOfDay.getTime());
   dailyScores.sort((a,b) => b.score - a.score);
-  
   const dailyWinnerName = dailyScores.length > 0 ? dailyScores[0].user : "@daily_king";
 
-  const chip = document.createElement('span');
+  const chip = document.createElement('a');
+  chip.href = `https://warpcast.com/${dailyWinnerName.replace('@','')}`;
+  chip.target = "_blank";
   chip.className = 'profile-chip winner';
   chip.innerHTML = `👑 ${dailyWinnerName}`;
   container.appendChild(chip);
 }
 
-// --- BADGES ---
+// --- BADGES & RANKING ---
 function checkBadges() {
-  // Calculate Ranks for badges
   const startOfDay = new Date();
   startOfDay.setHours(0,0,0,0);
-  
   const dailyScores = state.history.filter(h => h.date > startOfDay.getTime());
   dailyScores.sort((a,b) => b.score - a.score);
-  
   const allTimeScores = [...state.history].sort((a,b) => b.score - a.score);
 
-  // Check conditions
   let earned = [];
-  
-  // Rank 1 Daily
   if (dailyScores.length > 0 && dailyScores[0].score === state.bestScore && state.bestScore > 0) {
      if (!state.claimedBadges.includes('daily_1')) earned.push('daily_1');
   }
-  
-  // Rank Top 10 All Time
   const myRankIndex = allTimeScores.findIndex(h => h.score === state.bestScore);
   if (myRankIndex >= 0 && myRankIndex < 10) {
      if (!state.claimedBadges.includes('alltime_10')) earned.push('alltime_10');
   }
-
-  // Save if new badges found (auto-add to claimed list to trigger 'can-claim' logic if desired, 
-  // but here we rely on renderBadges to show claim button)
 }
 
 function renderBadges() {
   const container = document.getElementById('badgesContainer');
   container.innerHTML = '';
   
-  // Pre-calculate ranks for display logic
+  // Conditions logic is same as checkBadges...
   const startOfDay = new Date();
   startOfDay.setHours(0,0,0,0);
   const dailyScores = state.history.filter(h => h.date > startOfDay.getTime());
@@ -1191,12 +1194,9 @@ function renderBadges() {
   
   BADGE_DEFS.forEach(badge => {
     let conditionMet = false;
-    
     if (badge.type === 'games' && state.totalGames >= badge.target) conditionMet = true;
     if (badge.type === 'highScore' && state.bestScore >= badge.target) conditionMet = true;
     if (badge.type === 'jokers' && state.jokersUsed >= badge.target) conditionMet = true;
-    
-    // Rank Condition Checks
     if (badge.type === 'rank_daily') {
       if (dailyScores.length > 0 && dailyScores[0].score === state.bestScore && state.bestScore > 0) conditionMet = true;
     }
@@ -1206,7 +1206,6 @@ function renderBadges() {
     }
 
     const isClaimed = state.claimedBadges.includes(badge.id);
-
     const div = document.createElement('div');
     div.id = `badge-${badge.id}`;
     
@@ -1218,7 +1217,6 @@ function renderBadges() {
       actionHtml = '<div class="claimed-tag">OWNED</div>';
     } else if (conditionMet) {
       stateClass = 'can-claim';
-      // Added TX Sign requirement for claiming
       actionHtml = `<button class="claim-btn" onclick="claimBadge('${badge.id}')">CLAIM</button>`;
     }
 
@@ -1236,29 +1234,22 @@ function renderBadges() {
 async function claimBadge(id) {
   if(state.claimedBadges.includes(id)) return;
   
-  // TX Confirmation for Claiming Badge
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
     await signer.signMessage(`Claim Badge: ${id}`);
     
-    // If signed:
     state.claimedBadges.push(id);
     saveState(); 
     renderBadges();
-    
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
   } catch (err) {
-    alert("Claim cancelled. Signature required.");
+    alert("Signature required to claim badge.");
   }
 }
 
-// --- UI & MODALS ---
+// --- UI & LEADERBOARD ---
 function updateUI() {
   document.getElementById('displayBestScore').innerText = state.bestScore;
   if(document.getElementById('homeTotalPoints')) document.getElementById('homeTotalPoints').innerText = state.totalPoints;
@@ -1273,22 +1264,34 @@ function renderLeaderboard(filter) {
   list.innerHTML = '';
 
   let data = [...state.history];
-  
+
   if (filter === 'daily') {
     const startOfDay = new Date();
     startOfDay.setHours(0,0,0,0);
     data = data.filter(item => item.date > startOfDay.getTime());
   }
 
+  // Sort by Score Desc
   data.sort((a,b) => b.score - a.score);
-  data = data.slice(0, 20);
 
-  if (data.length === 0) {
-    list.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">No games played yet today!</div>';
+  // Unique Users Only (Best Score per User)
+  const seenUsers = new Set();
+  const uniqueData = [];
+  data.forEach(item => {
+    if(!seenUsers.has(item.user)) {
+      seenUsers.add(item.user);
+      uniqueData.push(item);
+    }
+  });
+
+  const finalData = uniqueData.slice(0, 20);
+
+  if (finalData.length === 0) {
+    list.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">No games played yet!</div>';
     return;
   }
 
-  data.forEach((item, index) => {
+  finalData.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'list-item';
     row.innerHTML = `
