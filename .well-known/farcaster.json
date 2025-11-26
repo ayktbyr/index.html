@@ -1,0 +1,18 @@
+{
+  "accountAssociation": {
+    "header": "WARPCASTTEN_ALDIGIN_HEADER_KODU",
+    "payload": "WARPCASTTEN_ALDIGIN_PAYLOAD_KODU",
+    "signature": "WARPCASTTEN_ALDIGIN_SIGNATURE_KODU"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Icon Master",
+    "iconUrl": "https://icon-master-demo.vercel.app/splash.png",
+    "homeUrl": "https://index-html-one-psi.vercel.app",
+    "imageUrl": "https://icon-master-demo.vercel.app/og-image.png",
+    "buttonTitle": "Play",
+    "splashImageUrl": "https://icon-master-demo.vercel.app/splash.png",
+    "splashBackgroundColor": "#0f172a",
+    "webhookUrl": "https://index-html-one-psi.vercel.app/api/webhook"
+  }
+}
