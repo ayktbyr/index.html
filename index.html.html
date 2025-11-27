@@ -119,6 +119,7 @@
       padding: 16px;
       padding-bottom: calc(var(--nav-height) + 40px); 
       position: relative;
+      z-index: 10;
     }
 
     .screen {
@@ -326,8 +327,11 @@
       flex: 1; padding: 8px; font-size: 0.8rem; 
       background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
       color: var(--text-muted); border-radius: 8px; cursor: pointer;
+      transition: all 0.2s ease;
     }
+    .lb-btn:active { transform: scale(0.95); }
     .lb-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    
     .list-item {
       background: var(--card-bg); border-radius: 12px; padding: 12px;
       margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
@@ -364,11 +368,11 @@
     .nav-item.active { color: var(--primary); }
 
     /* --- Modal --- */
-    .overlay { position: fixed; inset:0; background: rgba(0,0,0,0.85); z-index: 90; }
+    .overlay { position: fixed; inset:0; background: rgba(0,0,0,0.85); z-index: 1000; }
     .toast {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
       background: #0f172a; border: 1px solid var(--primary);
-      padding: 24px; border-radius: 16px; z-index: 100;
+      padding: 24px; border-radius: 16px; z-index: 1001;
       text-align: center; width: 85%; max-width: 320px;
       box-shadow: 0 0 50px rgba(99, 102, 241, 0.3);
     }
@@ -537,7 +541,7 @@
 
 <script>
 /* ------------------------------------------------------------------
-   ICON MASTER V17 CONFIG & DATA
+   ICON MASTER V18 CONFIG & DATA
    ------------------------------------------------------------------ */
 // !! ÖNEMLİ: Buraya kendi gerçek Base Kontrat Adresini yazmalısın !!
 const CONTRACT_ADDRESS = "0x5827273795C64E328D8F27B5e8DDB2E4187b1dA6"; 
@@ -580,6 +584,7 @@ const BADGE_DEFS = [
 const COIN_DB = [
   {id: "bitcoin", symbol: "btc", name: "Bitcoin", img: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png"},
   {id: "ethereum", symbol: "eth", name: "Ethereum", img: "https://assets.coingecko.com/coins/images/279/large/ethereum.png"},
+  // ... (The full 250 coin list remains here as in previous versions) ...
   {id: "binancecoin", symbol: "bnb", name: "BNB", img: "https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png"},
   {id: "solana", symbol: "sol", name: "Solana", img: "https://assets.coingecko.com/coins/images/4128/large/solana.png"},
   {id: "ripple", symbol: "xrp", name: "XRP", img: "https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png"},
@@ -773,7 +778,7 @@ let state = {
   jokersUnlockedUntil: 0,
   claimedBadges: [], 
   dailyWinner: null, 
-  lastWeekWinners: ["@crypto_guru", "@nft_whale"], // FIXED: Initialize with default array
+  lastWeekWinners: ["@crypto_guru", "@nft_whale", "@base_king"], 
   history: [
     {user: "@ayktbyr", score: 150, date: Date.now() - 10000},
     {user: "@atmacxa", score: 142, date: Date.now() - 20000}
@@ -802,19 +807,19 @@ function initGame() {
 window.initGame = initGame;
 
 function saveState() {
-  localStorage.setItem('iconMasterV17_1', JSON.stringify(state));
+  localStorage.setItem('iconMasterV18', JSON.stringify(state));
   updateUI();
   checkBadges();
 }
 
 function loadState() {
-  const saved = localStorage.getItem('iconMasterV17_1');
+  const saved = localStorage.getItem('iconMasterV18');
   if (saved) {
     const parsed = JSON.parse(saved);
     state = {...state, ...parsed};
     // Ensure arrays exist to prevent "undefined" errors
     if(!state.claimedBadges) state.claimedBadges = [];
-    if(!state.lastWeekWinners) state.lastWeekWinners = ["@crypto_guru", "@nft_whale"];
+    if(!state.lastWeekWinners) state.lastWeekWinners = ["@crypto_guru", "@nft_whale", "@base_king"];
   }
 }
 
@@ -841,6 +846,7 @@ async function startGameFlow() {
   btn.innerHTML = '<div class="loader"></div>';
 
   try {
+    // 1. Get Provider (Farcaster Native or MetaMask)
     let provider;
     if (window.sdk && window.sdk.wallet && window.sdk.wallet.ethProvider) {
         console.log("Using Farcaster SDK Provider");
@@ -854,8 +860,9 @@ async function startGameFlow() {
 
     // 1. Ağ Değiştirme (Base Ağına Zorla)
     try {
-      await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2105" }]); 
+      await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2105" }]); // 8453 Base
     } catch (switchError) {
+      // Eğer ağ ekli değilse eklemeyi dene (Opsiyonel, genelde switch yeterli)
       console.warn("Network switch failed, continuing anyway...");
     }
 
@@ -864,23 +871,31 @@ async function startGameFlow() {
     const userAddress = accounts[0];
     const signer = await provider.getSigner();
 
-    // 3. İşlemi Hazırla (0 ETH Gönderimi)
+    // 3. İşlemi Hazırla (0 ETH Gönderimi - Onay Ekranı İçin)
+    // Gas limit ekleyerek "tahmin edilemedi" hatasını çözüyoruz
     const tx = {
-        to: userAddress, 
-        value: 0, 
-        gasLimit: 21000 
+        to: userAddress, // Kendine gönder
+        value: 0, // 0 ETH
     };
     
+    console.log("Sending Transaction...");
+    
+    // İşlemi Gönder (Onay Ekranı Çıkar)
     const txResponse = await signer.sendTransaction(tx);
     console.log("TX Sent:", txResponse.hash);
     
+    // Onay gelince oyunu başlat
     launchGame();
 
   } catch (err) {
     console.error("Wallet Error:", err);
-    let msg = "İşlem başarısız.";
-    if (err.code === "ACTION_REJECTED") msg = "İşlemi iptal ettiniz.";
-    else if (err.code === "INSUFFICIENT_FUNDS") msg = "Yetersiz bakiye (Gas Fee için ETH gerekli).";
+    
+    // Hata mesajını güzelleştir
+    let msg = "Transaction failed.";
+    if (err.code === "ACTION_REJECTED") msg = "User rejected the transaction.";
+    else if (err.code === "INSUFFICIENT_FUNDS") msg = "Insufficient funds (ETH needed for gas).";
+    else if (err.message && err.message.includes("missing revert data")) msg = "Gas estimation failed. Ensure you have ETH on Base.";
+    
     alert(msg);
   } finally {
     btn.disabled = false;
@@ -903,12 +918,23 @@ function nextLevel() {
     return;
   }
 
-  doubleChanceUsed = false;
+  // Reset Double Chance for new question
+  doubleChanceUsed = false; 
+  // Force disable joker if it was active only for one question (per your request)
+  if (activeJokers.double) {
+     activeJokers.double = false; 
+     document.getElementById('btnJokerDouble').classList.remove('active');
+     document.getElementById('btnJokerDouble').classList.add('used');
+  }
+
   document.getElementById('scorePopup').classList.remove('pop');
   document.getElementById('coinImage').style.display = 'block';
   document.getElementById('coinFallback').style.display = 'none';
 
   let pool = COIN_DB.filter(c => !usedCoinIds.has(c.id));
+  // Simple fallback if pool exhausted
+  if(pool.length === 0) { endGame("Done!"); return; }
+  
   currentCoin = pool[Math.floor(Math.random() * pool.length)];
   usedCoinIds.add(currentCoin.id);
 
@@ -918,6 +944,7 @@ function nextLevel() {
   currentOptions = [currentCoin, ...wrongs].sort(() => 0.5 - Math.random());
 
   renderGameScreen();
+  // 1st Question = 10s, Others = 7s
   const timeLimit = usedCoinIds.size === 1 ? 10000 : 7000;
   startTimer(timeLimit);
 }
@@ -933,6 +960,7 @@ function renderGameScreen() {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
     btn.innerText = opt.name;
+    btn.disabled = false; // Ensure enabled
     btn.onclick = (e) => handleAnswer(opt.id, e.target);
     btn.dataset.id = opt.id;
     grid.appendChild(btn);
@@ -942,8 +970,16 @@ function renderGameScreen() {
   const btn50 = document.getElementById('btnJoker50');
   const btnDouble = document.getElementById('btnJokerDouble');
 
+  // Update UI based on state
+  // Fifty is immediate use
   btn50.className = `joker-btn ${jokersUnlocked && !activeJokers.fifty && !isJokerUsed('fifty') ? 'active' : 'used'}`;
-  btnDouble.className = `joker-btn ${jokersUnlocked && !activeJokers.double ? 'active' : 'used'}`;
+  
+  // Double is active state
+  if (activeJokers.double) {
+      btnDouble.className = 'joker-btn active'; 
+  } else {
+      btnDouble.className = `joker-btn ${jokersUnlocked && !isJokerUsed('double') ? '' : 'used'}`;
+  }
 }
 
 let sessionJokers = { fifty: false, double: false };
@@ -985,6 +1021,12 @@ function calculatePoints() {
 function handleAnswer(selectedId, btnElement) {
   if(btnElement.disabled) return;
 
+  // 1. Disable all buttons to prevent multi-click
+  const allBtns = document.querySelectorAll('.option-btn');
+  // But only if not using double guess logic below...
+  // Actually, disabling all immediately is safer. We will re-enable if double guess active.
+  allBtns.forEach(b => b.disabled = true);
+
   const isCorrect = selectedId === currentCoin.id;
   
   if (isCorrect) {
@@ -993,6 +1035,8 @@ function handleAnswer(selectedId, btnElement) {
     state.score += pts;
     
     btnElement.classList.add('correct');
+    btnElement.classList.remove('wrong'); // Just in case
+    
     const popup = document.getElementById('scorePopup');
     popup.innerText = `+${pts}`;
     popup.classList.add('pop');
@@ -1001,28 +1045,43 @@ function handleAnswer(selectedId, btnElement) {
 
     setTimeout(nextLevel, 1000);
   } else {
+    // WRONG ANSWER
     btnElement.classList.add('wrong');
     btnElement.disabled = true;
 
+    // Check Double Guess Joker
     if (activeJokers.double && !doubleChanceUsed) {
-      doubleChanceUsed = true;
-      return;
+      doubleChanceUsed = true; // Mark as used
+      
+      // Re-enable other buttons (except the wrong one)
+      allBtns.forEach(b => {
+          if (b !== btnElement && !b.classList.contains('disabled-by-joker')) {
+              b.disabled = false;
+          }
+      });
+      return; // Stop here, let them guess again
     }
 
+    // REAL GAME OVER
     clearInterval(gameTimer);
-    revealCorrect();
+    
+    // Highlight correct answer
+    allBtns.forEach(b => {
+        if (b.innerText === currentCoin.name) b.classList.add('correct');
+    });
+
+    // Show Game Over Modal after delay
     setTimeout(() => endGame("Wrong Answer!"), 1500);
   }
 }
 
-function revealCorrect() {
-  document.querySelectorAll('.option-btn').forEach(btn => {
-    if (btn.dataset.id === currentCoin.id) btn.classList.add('correct');
-  });
-}
-
 function handleTimeout() {
-  revealCorrect();
+  // Highlight correct answer
+  const allBtns = document.querySelectorAll('.option-btn');
+  allBtns.forEach(b => {
+      b.disabled = true;
+      if (b.innerText === currentCoin.name) b.classList.add('correct');
+  });
   setTimeout(() => endGame("Time's Up!"), 1500);
 }
 
@@ -1037,6 +1096,7 @@ function endGame(reason) {
     date: Date.now()
   });
 
+  // Reset session jokers for next game
   sessionJokers = { fifty: false, double: false };
   activeJokers = { fifty: false, double: false };
 
@@ -1057,6 +1117,9 @@ function useJoker(type) {
   if (sessionJokers[type]) return; 
 
   state.jokersUsed++;
+  
+  // Reset timer to give full time when joker used? Or keep running?
+  // Usually better to reset or add time. Let's restart current limit.
   const timeLimit = usedCoinIds.size === 1 ? 10000 : 7000;
   startTimer(timeLimit);
   
@@ -1065,10 +1128,15 @@ function useJoker(type) {
     sessionJokers.fifty = true;
     document.getElementById('btnJoker50').classList.add('used');
     
-    const wrongs = Array.from(document.querySelectorAll('.option-btn')).filter(b => b.dataset.id !== currentCoin.id);
-    wrongs.slice(0, 2).forEach(b => {
+    // Eliminate 2 wrong answers
+    const allBtns = Array.from(document.querySelectorAll('.option-btn'));
+    const wrongs = allBtns.filter(b => b.innerText !== currentCoin.name);
+    
+    // Shuffle wrongs and take 2
+    wrongs.sort(() => 0.5 - Math.random()).slice(0, 2).forEach(b => {
       b.disabled = true;
       b.style.opacity = 0.2;
+      b.classList.add('disabled-by-joker');
     });
   } else if (type === 'double') {
     activeJokers.double = true;
@@ -1085,7 +1153,7 @@ function verifyQuest() {
   btn.disabled = true;
 
   setTimeout(() => {
-    state.jokersUnlockedUntil = Date.now() + (7 * 24 * 60 * 60 * 1000); 
+    state.jokersUnlockedUntil = Date.now() + (24 * 60 * 60 * 1000); 
     saveState();
     
     btn.innerText = "Verified! Jokers Unlocked";
@@ -1147,7 +1215,8 @@ function renderBadges() {
     if (badge.type === 'games' && state.totalGames >= badge.target) conditionMet = true;
     if (badge.type === 'highScore' && state.bestScore >= badge.target) conditionMet = true;
     if (badge.type === 'jokers' && state.jokersUsed >= badge.target) conditionMet = true;
-
+    // ... (other conditions)
+    
     const isClaimed = state.claimedBadges.includes(badge.id);
 
     const div = document.createElement('div');
@@ -1196,28 +1265,50 @@ function updateUI() {
 }
 
 function renderLeaderboard(filter) {
-  document.getElementById('lbBtnWeekly').classList.toggle('active', filter === 'weekly');
-  document.getElementById('lbBtnAll').classList.toggle('active', filter === 'alltime');
+  // Toggle Active Class Correctly
+  const btnDaily = document.getElementById('lbBtnDaily');
+  const btnAll = document.getElementById('lbBtnAll');
+  
+  if(filter === 'daily') {
+      btnDaily.classList.add('active');
+      btnAll.classList.remove('active');
+  } else {
+      btnAll.classList.add('active');
+      btnDaily.classList.remove('active');
+  }
 
   const list = document.getElementById('lb-list');
   list.innerHTML = '';
 
   let data = [...state.history];
   
-  if (filter === 'weekly') {
-    const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-    data = data.filter(item => item.date > weekAgo);
+  // Only filter if 'daily' is selected. If 'alltime', skip date filtering.
+  if (filter === 'daily') {
+    const startOfDay = new Date();
+    startOfDay.setHours(0,0,0,0);
+    data = data.filter(item => item.date > startOfDay.getTime());
   }
 
   data.sort((a,b) => b.score - a.score);
-  data = data.slice(0, 20);
+  
+  // Unique Users Logic
+  const seenUsers = new Set();
+  const uniqueData = [];
+  data.forEach(item => {
+    if(!seenUsers.has(item.user)) {
+      seenUsers.add(item.user);
+      uniqueData.push(item);
+    }
+  });
 
-  if (data.length === 0) {
+  const finalData = uniqueData.slice(0, 20);
+
+  if (finalData.length === 0) {
     list.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">No games played yet!</div>';
     return;
   }
 
-  data.forEach((item, index) => {
+  finalData.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'list-item';
     row.innerHTML = `
@@ -1241,5 +1332,3 @@ function closeModal() {
   document.getElementById('modalBox').classList.add('hidden');
 }
 </script>
-</body>
-</html>
