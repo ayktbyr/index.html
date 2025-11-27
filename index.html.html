@@ -5,14 +5,10 @@
   <title>Icon Master - Farcaster Crypto Quiz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   
-  <!-- Game Icon (Browser Tab) -->
+  <!-- Game Icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 
-  <!-- 
-    FARCASTER METADATA
-    iconUrl: Mini App listesinde görünen ikon.
-    splashImageUrl: Uygulama açılırken çıkan görsel.
-  -->
+  <!-- FARCASTER METADATA -->
   <meta property="fc:frame" content='{"version":"next","imageUrl":"https://icon-master-demo.vercel.app/og-image.png","button":{"title":"Play Icon Master","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://icon-master-demo.vercel.app/splash.png","splashBackgroundColor":"#0f172a"}}}' />
   
   <!-- Open Graph -->
@@ -31,13 +27,11 @@
     window.sdk = sdk; 
 
     window.onload = async () => {
-      // Load Game Data
       loadState();
       updateUI();
       updateJokerStatus();
       updateQuestLeaders();
 
-      // Tell Farcaster we are ready (removes splash screen)
       try {
         await sdk.actions.ready();
         console.log("Farcaster SDK Ready!");
@@ -542,14 +536,14 @@
 
 <script>
 /* ------------------------------------------------------------------
-   ICON MASTER V14.1 CONFIG & DATA
+   ICON MASTER V14.2 CONFIG & DATA
    ------------------------------------------------------------------ */
 const CONFIG = {
   totalTime: 7000, 
   baseChainId: '8453' // 8453 decimal for Base
 };
 
-// UPDATED BADGE LIST
+// UPDATED BADGE LIST (Points updated: 100/200/250)
 const BADGE_DEFS = [
   { id: 'daily_1', type: 'rank_daily', target: 1, icon: '🥇', title: 'Daily King', desc: 'Rank #1 Daily' },
   { id: 'alltime_10', type: 'rank_all', target: 10, icon: '🌟', title: 'Top 10 Elite', desc: 'Top 10 All Time' },
@@ -845,12 +839,19 @@ async function startGameFlow() {
         throw new Error("Cüzdan bulunamadı! (No wallet found)");
     }
 
-    // Cüzdanı Bağla
+    // 1. Bakiye Kontrolü
     const accounts = await provider.send("eth_requestAccounts", []);
     const userAddress = accounts[0];
-    const signer = await provider.getSigner();
+    const balance = await provider.getBalance(userAddress);
+    
+    if (balance === 0n) {
+       alert("⚠️ Oynamak için Base ağında çok az miktarda ETH gereklidir (Gas Fee için). Cüzdanınız boş görünüyor.");
+       // İsteğe bağlı: Yine de devam etmek isterseniz alt satırı aktif edebilirsiniz, ama hata alması muhtemeldir.
+       // throw new Error("Insufficient funds"); 
+    }
 
-    // İşlemi Hazırla (0 ETH Gönderimi - Onay Ekranı İçin)
+    // 2. İşlemi Hazırla (0 ETH Gönderimi - Onay Ekranı İçin)
+    const signer = await provider.getSigner();
     const tx = {
         to: userAddress, // Kendine gönder
         value: 0 // 0 ETH
@@ -867,8 +868,14 @@ async function startGameFlow() {
 
   } catch (err) {
     console.error("Wallet Error:", err);
-    // Hatayı kullanıcıya göster (Artık sadece 'Cancelled' demiyoruz)
-    alert("Hata: " + (err.message || err.code || "İşlem başarısız"));
+    
+    // Hata mesajını güzelleştir
+    let msg = "İşlem başarısız.";
+    if (err.code === "ACTION_REJECTED") msg = "İşlemi iptal ettiniz.";
+    else if (err.code === "INSUFFICIENT_FUNDS") msg = "Yetersiz bakiye (Gas Fee için ETH gerekli).";
+    else if (err.message && err.message.includes("missing revert data")) msg = "Gas tahmini yapılamadı. Lütfen Base ağında ETH olduğundan emin olun.";
+    
+    alert(msg);
   } finally {
     btn.disabled = false;
     btn.innerText = "Start Game";
@@ -903,6 +910,9 @@ function nextLevel() {
   document.getElementById('coinFallback').style.display = 'none';
 
   let pool = COIN_DB.filter(c => !usedCoinIds.has(c.id));
+  // Simple fallback if pool exhausted
+  if(pool.length === 0) { endGame("Done!"); return; }
+  
   currentCoin = pool[Math.floor(Math.random() * pool.length)];
   usedCoinIds.add(currentCoin.id);
 
@@ -937,10 +947,13 @@ function renderGameScreen() {
   const btn50 = document.getElementById('btnJoker50');
   const btnDouble = document.getElementById('btnJokerDouble');
 
+  // Update UI based on state
+  // Fifty is immediate use
   btn50.className = `joker-btn ${jokersUnlocked && !activeJokers.fifty && !isJokerUsed('fifty') ? 'active' : 'used'}`;
   
+  // Double is active state
   if (activeJokers.double) {
-      btnDouble.className = 'joker-btn active'; 
+      btnDouble.className = 'joker-btn active'; // Currently active
   } else {
       btnDouble.className = `joker-btn ${jokersUnlocked && !isJokerUsed('double') ? '' : 'used'}`;
   }
@@ -1296,3 +1309,4 @@ function closeModal() {
 </script>
 </body>
 </html>
+```
