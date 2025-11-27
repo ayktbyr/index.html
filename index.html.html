@@ -773,6 +773,7 @@ let state = {
   jokersUnlockedUntil: 0,
   claimedBadges: [], 
   dailyWinner: null, 
+  lastWeekWinners: ["@crypto_guru", "@nft_whale"], // FIXED: Initialize with default array
   history: [
     {user: "@ayktbyr", score: 150, date: Date.now() - 10000},
     {user: "@atmacxa", score: 142, date: Date.now() - 20000}
@@ -797,20 +798,21 @@ function initGame() {
   updateQuestLeaders();
 }
 
+// Use multiple listeners to be safe
 window.initGame = initGame;
 
 function saveState() {
-  localStorage.setItem('iconMasterV17', JSON.stringify(state));
+  localStorage.setItem('iconMasterV17_1', JSON.stringify(state));
   updateUI();
   checkBadges();
 }
 
 function loadState() {
-  const saved = localStorage.getItem('iconMasterV17');
+  const saved = localStorage.getItem('iconMasterV17_1');
   if (saved) {
     const parsed = JSON.parse(saved);
     state = {...state, ...parsed};
-    // Ensure arrays exist
+    // Ensure arrays exist to prevent "undefined" errors
     if(!state.claimedBadges) state.claimedBadges = [];
     if(!state.lastWeekWinners) state.lastWeekWinners = ["@crypto_guru", "@nft_whale"];
   }
@@ -839,14 +841,11 @@ async function startGameFlow() {
   btn.innerHTML = '<div class="loader"></div>';
 
   try {
-    // 1. Get Provider (Farcaster Native or MetaMask)
     let provider;
     if (window.sdk && window.sdk.wallet && window.sdk.wallet.ethProvider) {
         console.log("Using Farcaster SDK Provider");
         provider = new ethers.BrowserProvider(window.sdk.wallet.ethProvider, "any");
-    } 
-    // Yedek: MetaMask vb. (Tarayıcı)
-    else if (window.ethereum) {
+    } else if (window.ethereum) {
         console.log("Using Window.Ethereum");
         provider = new ethers.BrowserProvider(window.ethereum, "any");
     } else {
@@ -855,9 +854,8 @@ async function startGameFlow() {
 
     // 1. Ağ Değiştirme (Base Ağına Zorla)
     try {
-      await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2105" }]); // 8453 Base
+      await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2105" }]); 
     } catch (switchError) {
-      // Eğer ağ ekli değilse eklemeyi dene (Opsiyonel, genelde switch yeterli)
       console.warn("Network switch failed, continuing anyway...");
     }
 
@@ -866,32 +864,23 @@ async function startGameFlow() {
     const userAddress = accounts[0];
     const signer = await provider.getSigner();
 
-    // 3. İşlemi Hazırla (0 ETH Gönderimi - Onay Ekranı İçin)
-    // Gas limitremoved to allow wallet estimation
+    // 3. İşlemi Hazırla (0 ETH Gönderimi)
     const tx = {
-        to: userAddress, // Kendine gönder
-        value: 0, // 0 ETH
-        data: "0x" // Empty data
+        to: userAddress, 
+        value: 0, 
+        gasLimit: 21000 
     };
     
-    console.log("Sending Transaction...");
-    
-    // İşlemi Gönder (Onay Ekranı Çıkar)
     const txResponse = await signer.sendTransaction(tx);
     console.log("TX Sent:", txResponse.hash);
     
-    // Onay gelince oyunu başlat
     launchGame();
 
   } catch (err) {
     console.error("Wallet Error:", err);
-    
-    // Hata mesajını güzelleştir
     let msg = "İşlem başarısız.";
     if (err.code === "ACTION_REJECTED") msg = "İşlemi iptal ettiniz.";
     else if (err.code === "INSUFFICIENT_FUNDS") msg = "Yetersiz bakiye (Gas Fee için ETH gerekli).";
-    else if (err.message && err.message.includes("missing revert data")) msg = "Gas tahmini yapılamadı. Lütfen Base ağında ETH olduğundan emin olun.";
-    
     alert(msg);
   } finally {
     btn.disabled = false;
@@ -914,24 +903,12 @@ function nextLevel() {
     return;
   }
 
-  // Reset Double Chance for new question
-  doubleChanceUsed = false; 
-  // Eğer geçen turda aktifse, her yeni soruda resetlensin (isteğe bağlı: oyun boyu tek kullanım ise kalmalı)
-  // Sadece "o soruda" kullanılan bir joker ise kapatıyoruz:
-  if (activeJokers.double) {
-     activeJokers.double = false; 
-     document.getElementById('btnJokerDouble').classList.remove('active');
-     document.getElementById('btnJokerDouble').classList.add('used');
-  }
-
+  doubleChanceUsed = false;
   document.getElementById('scorePopup').classList.remove('pop');
   document.getElementById('coinImage').style.display = 'block';
   document.getElementById('coinFallback').style.display = 'none';
 
   let pool = COIN_DB.filter(c => !usedCoinIds.has(c.id));
-  // Simple fallback if pool exhausted
-  if(pool.length === 0) { endGame("Done!"); return; }
-  
   currentCoin = pool[Math.floor(Math.random() * pool.length)];
   usedCoinIds.add(currentCoin.id);
 
@@ -941,7 +918,6 @@ function nextLevel() {
   currentOptions = [currentCoin, ...wrongs].sort(() => 0.5 - Math.random());
 
   renderGameScreen();
-  // 1st Question = 10s, Others = 7s
   const timeLimit = usedCoinIds.size === 1 ? 10000 : 7000;
   startTimer(timeLimit);
 }
@@ -966,16 +942,8 @@ function renderGameScreen() {
   const btn50 = document.getElementById('btnJoker50');
   const btnDouble = document.getElementById('btnJokerDouble');
 
-  // Update UI based on state
-  // Fifty is immediate use
   btn50.className = `joker-btn ${jokersUnlocked && !activeJokers.fifty && !isJokerUsed('fifty') ? 'active' : 'used'}`;
-  
-  // Double is active state
-  if (activeJokers.double) {
-      btnDouble.className = 'joker-btn active'; // Currently active
-  } else {
-      btnDouble.className = `joker-btn ${jokersUnlocked && !isJokerUsed('double') ? '' : 'used'}`;
-  }
+  btnDouble.className = `joker-btn ${jokersUnlocked && !activeJokers.double ? 'active' : 'used'}`;
 }
 
 let sessionJokers = { fifty: false, double: false };
@@ -1036,10 +1004,8 @@ function handleAnswer(selectedId, btnElement) {
     btnElement.classList.add('wrong');
     btnElement.disabled = true;
 
-    // Double Guess Logic (Only once per question)
     if (activeJokers.double && !doubleChanceUsed) {
-      doubleChanceUsed = true; // Consume usage for THIS round
-      // Don't end game
+      doubleChanceUsed = true;
       return;
     }
 
@@ -1065,14 +1031,12 @@ function endGame(reason) {
   state.totalPoints += state.score;
   if (state.score > state.bestScore) state.bestScore = state.score;
   
-  // Add to history
   state.history.push({
     user: "You",
     score: state.score,
     date: Date.now()
   });
 
-  // Reset session jokers for next game
   sessionJokers = { fifty: false, double: false };
   activeJokers = { fifty: false, double: false };
 
@@ -1121,7 +1085,7 @@ function verifyQuest() {
   btn.disabled = true;
 
   setTimeout(() => {
-    state.jokersUnlockedUntil = Date.now() + (24 * 60 * 60 * 1000); 
+    state.jokersUnlockedUntil = Date.now() + (7 * 24 * 60 * 60 * 1000); 
     saveState();
     
     btn.innerText = "Verified! Jokers Unlocked";
@@ -1150,6 +1114,16 @@ function updateQuestLeaders() {
     <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/atmacxa')" class="profile-chip">@atmacxa</div>
   `;
 
+  // FIX: Ensure lastWeekWinners exists before iterating
+  if (state.lastWeekWinners && Array.isArray(state.lastWeekWinners)) {
+    state.lastWeekWinners.forEach(user => {
+      const chip = document.createElement('span');
+      chip.className = 'profile-chip';
+      chip.innerText = user;
+      container.appendChild(chip);
+    });
+  }
+
   const startOfDay = new Date();
   startOfDay.setHours(0,0,0,0);
   const dailyScores = state.history.filter(h => h.date > startOfDay.getTime());
@@ -1163,48 +1137,19 @@ function updateQuestLeaders() {
   container.appendChild(chip);
 }
 
-// --- BADGES & RANKING ---
-function checkBadges() {
-  const startOfDay = new Date();
-  startOfDay.setHours(0,0,0,0);
-  const dailyScores = state.history.filter(h => h.date > startOfDay.getTime());
-  dailyScores.sort((a,b) => b.score - a.score);
-  const allTimeScores = [...state.history].sort((a,b) => b.score - a.score);
-
-  let earned = [];
-  if (dailyScores.length > 0 && dailyScores[0].score === state.bestScore && state.bestScore > 0) {
-     if (!state.claimedBadges.includes('daily_1')) earned.push('daily_1');
-  }
-  const myRankIndex = allTimeScores.findIndex(h => h.score === state.bestScore);
-  if (myRankIndex >= 0 && myRankIndex < 10) {
-     if (!state.claimedBadges.includes('alltime_10')) earned.push('alltime_10');
-  }
-}
-
+// --- BADGES ---
 function renderBadges() {
   const container = document.getElementById('badgesContainer');
   container.innerHTML = '';
-  
-  const startOfDay = new Date();
-  startOfDay.setHours(0,0,0,0);
-  const dailyScores = state.history.filter(h => h.date > startOfDay.getTime());
-  dailyScores.sort((a,b) => b.score - a.score);
-  const allTimeScores = [...state.history].sort((a,b) => b.score - a.score);
   
   BADGE_DEFS.forEach(badge => {
     let conditionMet = false;
     if (badge.type === 'games' && state.totalGames >= badge.target) conditionMet = true;
     if (badge.type === 'highScore' && state.bestScore >= badge.target) conditionMet = true;
     if (badge.type === 'jokers' && state.jokersUsed >= badge.target) conditionMet = true;
-    if (badge.type === 'rank_daily') {
-      if (dailyScores.length > 0 && dailyScores[0].score === state.bestScore && state.bestScore > 0) conditionMet = true;
-    }
-    if (badge.type === 'rank_all') {
-       const myRank = allTimeScores.findIndex(h => h.score === state.bestScore);
-       if (myRank !== -1 && myRank < badge.target) conditionMet = true;
-    }
 
     const isClaimed = state.claimedBadges.includes(badge.id);
+
     const div = document.createElement('div');
     div.id = `badge-${badge.id}`;
     
@@ -1216,7 +1161,7 @@ function renderBadges() {
       actionHtml = '<div class="claimed-tag">OWNED</div>';
     } else if (conditionMet) {
       stateClass = 'can-claim';
-      actionHtml = `<button class="claim-btn" onclick="claimBadge('${badge.id}')">MINT</button>`;
+      actionHtml = `<button class="claim-btn" onclick="claimBadge('${badge.id}')">CLAIM</button>`;
     }
 
     div.className = `badge-item ${stateClass}`;
@@ -1230,41 +1175,20 @@ function renderBadges() {
   });
 }
 
-async function claimBadge(id) {
+function claimBadge(id) {
   if(state.claimedBadges.includes(id)) return;
   
-  try {
-    let provider;
-    if (window.sdk && window.sdk.wallet && window.sdk.wallet.ethProvider) {
-        provider = new ethers.BrowserProvider(window.sdk.wallet.ethProvider, "any");
-    } else if (window.ethereum) {
-        provider = new ethers.BrowserProvider(window.ethereum, "any");
-    } else {
-        throw new Error("No wallet found");
-    }
-
-    await provider.send("eth_requestAccounts", []);
-    const signer = await provider.getSigner();
-    const userAddress = await signer.getAddress();
-
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, MINIMAL_ABI, signer);
-    const badgeIdInt = BADGE_ID_MAP[id] || 0;
-
-    // Mint transaction without hardcoded gas limit
-    const tx = await contract.mint(badgeIdInt, 1);
-    console.log("Mint TX Sent:", tx.hash);
-    
-    state.claimedBadges.push(id);
-    saveState(); 
-    renderBadges();
-    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-  } catch (err) {
-    console.error("Mint Error:", err);
-    alert("Mint failed: " + (err.reason || err.message));
-  }
+  state.claimedBadges.push(id);
+  saveState(); 
+  
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 }
+  });
 }
 
-// --- UI & LEADERBOARD ---
+// --- UI & MODALS ---
 function updateUI() {
   document.getElementById('displayBestScore').innerText = state.bestScore;
   if(document.getElementById('homeTotalPoints')) document.getElementById('homeTotalPoints').innerText = state.totalPoints;
@@ -1272,39 +1196,28 @@ function updateUI() {
 }
 
 function renderLeaderboard(filter) {
-  document.getElementById('lbBtnDaily').classList.toggle('active', filter === 'daily');
+  document.getElementById('lbBtnWeekly').classList.toggle('active', filter === 'weekly');
   document.getElementById('lbBtnAll').classList.toggle('active', filter === 'alltime');
 
   const list = document.getElementById('lb-list');
   list.innerHTML = '';
 
   let data = [...state.history];
-
-  if (filter === 'daily') {
-    const startOfDay = new Date();
-    startOfDay.setHours(0,0,0,0);
-    data = data.filter(item => item.date > startOfDay.getTime());
+  
+  if (filter === 'weekly') {
+    const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    data = data.filter(item => item.date > weekAgo);
   }
 
   data.sort((a,b) => b.score - a.score);
-  
-  const seenUsers = new Set();
-  const uniqueData = [];
-  data.forEach(item => {
-    if(!seenUsers.has(item.user)) {
-      seenUsers.add(item.user);
-      uniqueData.push(item);
-    }
-  });
+  data = data.slice(0, 20);
 
-  const finalData = uniqueData.slice(0, 20);
-
-  if (finalData.length === 0) {
+  if (data.length === 0) {
     list.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">No games played yet!</div>';
     return;
   }
 
-  finalData.forEach((item, index) => {
+  data.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'list-item';
     row.innerHTML = `
