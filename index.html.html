@@ -542,7 +542,7 @@
 
 <script>
 /* ------------------------------------------------------------------
-   ICON MASTER V14 CONFIG & DATA
+   ICON MASTER V14.1 CONFIG & DATA
    ------------------------------------------------------------------ */
 const CONFIG = {
   totalTime: 7000, 
@@ -735,6 +735,8 @@ const COIN_DB = [
 // Handle Image Error with Smart Fallback System
 function handleImageError(img) {
   if (!img || !currentCoin) return;
+
+  // If already failed CoinCap fallback, switch to text avatar
   if (img.src.includes('assets.coincap.io')) {
     img.style.display = 'none';
     const fallback = document.getElementById('coinFallback');
@@ -747,6 +749,8 @@ function handleImageError(img) {
     }
     return;
   }
+
+  // Try CoinCap fallback first
   img.src = `https://assets.coincap.io/assets/icons/${currentCoin.symbol.toLowerCase()}@2x.png`;
 }
 
@@ -759,7 +763,7 @@ let state = {
   bestScore: 0,
   jokersUnlockedUntil: 0,
   claimedBadges: [], 
-  dailyWinner: null, 
+  dailyWinner: null, // Holds {user, score} for the current daily leader
   history: [
     {user: "@ayktbyr", score: 150, date: Date.now() - 10000},
     {user: "@atmacxa", score: 142, date: Date.now() - 20000}
@@ -773,7 +777,7 @@ let gameTimer = null;
 let timerStart = 0;
 let usedCoinIds = new Set();
 let activeJokers = { fifty: false, double: false };
-let doubleChanceUsed = false; 
+let doubleChanceUsed = false; // Tracks "Double Guess" usage per question
 
 // --- INIT ---
 // Ensure we check for Farcaster SDK on load
@@ -784,6 +788,7 @@ function initGame() {
   updateQuestLeaders();
 }
 
+// Use multiple listeners to be safe
 window.initGame = initGame;
 
 function saveState() {
@@ -797,11 +802,13 @@ function loadState() {
   if (saved) {
     const parsed = JSON.parse(saved);
     state = {...state, ...parsed};
+    // Ensure arrays exist
     if(!state.claimedBadges) state.claimedBadges = [];
     if(!state.lastWeekWinners) state.lastWeekWinners = ["@crypto_guru", "@nft_whale"];
   }
 }
 
+// --- NAVIGATION ---
 function navTo(screenName) {
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -824,41 +831,44 @@ async function startGameFlow() {
   btn.innerHTML = '<div class="loader"></div>';
 
   try {
-    // 1. Get Provider (Farcaster Native or MetaMask)
     let provider;
+    // Öncelik Farcaster Cüzdanı
     if (window.sdk && window.sdk.wallet && window.sdk.wallet.ethProvider) {
-        provider = new ethers.BrowserProvider(window.sdk.wallet.ethProvider);
-    } else if (window.ethereum) {
-        provider = new ethers.BrowserProvider(window.ethereum);
+        console.log("Using Farcaster SDK Provider");
+        provider = new ethers.BrowserProvider(window.sdk.wallet.ethProvider, "any");
+    } 
+    // Yedek: MetaMask vb. (Tarayıcı)
+    else if (window.ethereum) {
+        console.log("Using Window.Ethereum");
+        provider = new ethers.BrowserProvider(window.ethereum, "any");
     } else {
-        throw new Error("No wallet found");
+        throw new Error("Cüzdan bulunamadı! (No wallet found)");
     }
 
-    // 2. Request Accounts
+    // Cüzdanı Bağla
     const accounts = await provider.send("eth_requestAccounts", []);
-    const signer = await provider.getSigner();
     const userAddress = accounts[0];
+    const signer = await provider.getSigner();
 
-    // 3. REAL TRANSACTION: Send 0 ETH to self (Triggers the native "Confirm Transaction" UI)
-    // Using a transaction instead of just signature to force the specific UI
+    // İşlemi Hazırla (0 ETH Gönderimi - Onay Ekranı İçin)
     const tx = {
-        to: userAddress,
-        value: 0,
-        // Optional: Chain switching logic could be added here, but assuming Base for now
+        to: userAddress, // Kendine gönder
+        value: 0 // 0 ETH
     };
     
-    // This will pop up the native wallet modal (Farcaster or MetaMask)
-    const txResponse = await signer.sendTransaction(tx);
-    console.log("Game Start TX Sent:", txResponse.hash);
+    console.log("Sending Transaction...");
     
-    // Wait for 1 conf? No need for game start, just broadcast is enough
+    // İşlemi Gönder (Onay Ekranı Çıkar)
+    const txResponse = await signer.sendTransaction(tx);
+    console.log("TX Sent:", txResponse.hash);
+    
+    // Onay gelince oyunu başlat
     launchGame();
 
   } catch (err) {
-    console.error("Wallet interaction failed:", err);
-    // Fallback: If user rejects or error, we can still let them play or show error
-    // For better UX, let's show error message then reset button
-    alert("Transaction cancelled. Please confirm to play!");
+    console.error("Wallet Error:", err);
+    // Hatayı kullanıcıya göster (Artık sadece 'Cancelled' demiyoruz)
+    alert("Hata: " + (err.message || err.code || "İşlem başarısız"));
   } finally {
     btn.disabled = false;
     btn.innerText = "Start Game";
@@ -880,6 +890,7 @@ function nextLevel() {
     return;
   }
 
+  // Reset Double Chance for new question
   doubleChanceUsed = false; 
   if (activeJokers.double) {
      activeJokers.double = false;
@@ -892,9 +903,6 @@ function nextLevel() {
   document.getElementById('coinFallback').style.display = 'none';
 
   let pool = COIN_DB.filter(c => !usedCoinIds.has(c.id));
-  // Simple fallback if pool exhausted
-  if(pool.length === 0) { endGame("Done!"); return; }
-  
   currentCoin = pool[Math.floor(Math.random() * pool.length)];
   usedCoinIds.add(currentCoin.id);
 
@@ -904,6 +912,7 @@ function nextLevel() {
   currentOptions = [currentCoin, ...wrongs].sort(() => 0.5 - Math.random());
 
   renderGameScreen();
+  // 1st Question = 10s, Others = 7s
   const timeLimit = usedCoinIds.size === 1 ? 10000 : 7000;
   startTimer(timeLimit);
 }
@@ -995,8 +1004,10 @@ function handleAnswer(selectedId, btnElement) {
     btnElement.classList.add('wrong');
     btnElement.disabled = true;
 
+    // Double Guess Logic (Only once per question)
     if (activeJokers.double && !doubleChanceUsed) {
-      doubleChanceUsed = true; 
+      doubleChanceUsed = true; // Consume usage for THIS round
+      // Don't end game
       return;
     }
 
@@ -1022,12 +1033,14 @@ function endGame(reason) {
   state.totalPoints += state.score;
   if (state.score > state.bestScore) state.bestScore = state.score;
   
+  // Add to history
   state.history.push({
     user: "You",
     score: state.score,
     date: Date.now()
   });
 
+  // Reset session jokers for next game
   sessionJokers = { fifty: false, double: false };
   activeJokers = { fifty: false, double: false };
 
@@ -1048,6 +1061,7 @@ function useJoker(type) {
   if (sessionJokers[type]) return; 
 
   state.jokersUsed++;
+  // Reset timer on Joker use (Give 7s or 10s depending on question)
   const timeLimit = usedCoinIds.size === 1 ? 10000 : 7000;
   startTimer(timeLimit);
   
@@ -1188,13 +1202,12 @@ function renderBadges() {
 async function claimBadge(id) {
   if(state.claimedBadges.includes(id)) return;
   
-  // Real TX for Minting (Simulated as 0 ETH send for now)
   try {
     let provider;
     if (window.sdk && window.sdk.wallet && window.sdk.wallet.ethProvider) {
-        provider = new ethers.BrowserProvider(window.sdk.wallet.ethProvider);
+        provider = new ethers.BrowserProvider(window.sdk.wallet.ethProvider, "any");
     } else if (window.ethereum) {
-        provider = new ethers.BrowserProvider(window.ethereum);
+        provider = new ethers.BrowserProvider(window.ethereum, "any");
     } else {
         throw new Error("No wallet found");
     }
@@ -1237,8 +1250,10 @@ function renderLeaderboard(filter) {
     data = data.filter(item => item.date > startOfDay.getTime());
   }
 
+  // Sort by Score Desc
   data.sort((a,b) => b.score - a.score);
-  
+
+  // Unique Users Only (Best Score per User)
   const seenUsers = new Set();
   const uniqueData = [];
   data.forEach(item => {
