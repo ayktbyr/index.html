@@ -4,9 +4,11 @@
   <meta charset="UTF-8" />
   <title>Icon Master - Farcaster Crypto Quiz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+  
+  <!-- Game Icon -->
+  <link rel="icon" href="https://icon-master-demo.vercel.app/splash.png">
 
-  <!-- FARCASTER METADATA (JSON Format for better compatibility) -->
+  <!-- FARCASTER METADATA -->
   <meta property="fc:frame" content='{"version":"next","imageUrl":"https://icon-master-demo.vercel.app/og-image.png","button":{"title":"Play Icon Master","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://icon-master-demo.vercel.app/splash.png","splashBackgroundColor":"#0f172a"}}}' />
   
   <!-- Open Graph -->
@@ -21,25 +23,17 @@
   <!-- Farcaster SDK -->
   <script type="module">
     import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
-    
+    window.sdk = sdk; 
+
     window.onload = async () => {
-      // Initialize Game Data from LocalStorage
       loadState();
       updateUI();
       updateJokerStatus();
       updateQuestLeaders();
 
-      // Signal Ready to Farcaster
       try {
         await sdk.actions.ready();
         console.log("Farcaster SDK Ready!");
-        
-        // Auto-connect context if available (simulated here, real app would use sdk.context)
-        const context = await sdk.context;
-        if(context && context.user) {
-           // In a real app, we'd use the real Farcaster username here
-           // state.currentUser = context.user.username; 
-        }
       } catch (err) {
         console.error("SDK Error:", err);
       }
@@ -49,7 +43,7 @@
   <style>
     :root {
       --bg-color: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-bg: rgba(30, 41, 59, 0.9);
       --primary: #6366f1;
       --accent: #8b5cf6;
       --success: #22c55e;
@@ -57,7 +51,7 @@
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --gold: #fbbf24;
-      --nav-height: 70px; /* Fixed height for nav bar */
+      --nav-height: 80px; 
     }
 
     * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -66,18 +60,19 @@
       margin: 0;
       background: radial-gradient(circle at center top, #1e293b 0%, #020617 100%);
       color: var(--text);
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      height: 100vh; /* Fixed height to prevent scrolling body */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      height: 100vh;
+      width: 100vw;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      overflow: hidden; /* Prevent bounce scroll */
+      overflow: hidden;
     }
 
     .app-container {
       width: 100%;
       max-width: 480px;
       height: 100%;
+      margin: 0 auto;
       position: relative;
       background: rgba(15, 23, 42, 0.5);
       display: flex;
@@ -89,11 +84,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(2, 6, 23, 0.8);
+      background: rgba(2, 6, 23, 0.95);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255,255,255,0.1);
       z-index: 20;
-      flex-shrink: 0; /* Header küçülmesin */
+      flex-shrink: 0;
     }
 
     .brand {
@@ -116,12 +111,13 @@
     }
     .personal-best span { color: var(--gold); font-weight: bold; }
 
-    /* --- Scrollable Content Area --- */
+    /* --- Content Area (Scrollable) --- */
     .content {
       flex: 1;
-      overflow-y: auto; /* Enable scrolling inside content */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 16px;
-      padding-bottom: calc(var(--nav-height) + 20px); /* Nav bar için boşluk */
+      padding-bottom: calc(var(--nav-height) + 40px); 
       position: relative;
     }
 
@@ -129,7 +125,6 @@
       display: none;
       animation: fadeIn 0.3s ease;
       width: 100%;
-      height: 100%;
       flex-direction: column;
     }
     .screen.active { display: flex; }
@@ -149,13 +144,14 @@
       cursor: pointer;
       box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
       transition: transform 0.1s;
-      margin-top: auto; /* Push to bottom of screen */
+      margin-top: 20px;
+      display: flex; justify-content: center; align-items: center;
     }
     .btn-main:active { transform: scale(0.98); }
     .btn-main:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
 
     .hero-card {
-      background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 24px;
       padding: 30px 20px;
@@ -186,83 +182,50 @@
     }
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
-    .hero-stats-bar {
-      display: flex;
-      gap: 12px;
-      width: 100%;
-      justify-content: center;
-    }
+    .hero-stats-bar { display: flex; gap: 12px; width: 100%; justify-content: center; }
     .stat-pill {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
       padding: 6px 12px;
       border-radius: 12px;
       font-size: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-muted);
+      display: flex; align-items: center; gap: 6px; color: var(--text-muted);
     }
     .stat-pill b { color: var(--text); font-size: 0.9rem; }
     .stat-pill.highlight b { color: var(--primary); }
 
     .hero-title {
-      margin: 0;
-      font-size: 1.8rem;
-      font-weight: 800;
+      margin: 0; font-size: 1.8rem; font-weight: 800;
       background: linear-gradient(to bottom right, #fff, #94a3b8);
-      -webkit-background-clip: text;
-      color: transparent;
+      -webkit-background-clip: text; color: transparent;
     }
     .hero-desc {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin: 0;
-      max-width: 260px;
-      line-height: 1.4;
+      font-size: 0.9rem; color: var(--text-muted); margin: 0;
+      max-width: 260px; line-height: 1.4;
     }
 
-    .game-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
+    .game-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
     .game-stat {
-      background: var(--card-bg);
-      padding: 6px 12px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      font-weight: 600;
+      background: var(--card-bg); padding: 6px 12px; border-radius: 12px;
+      font-size: 0.9rem; font-weight: 600;
     }
     .timer-bar {
-      height: 6px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 3px;
-      margin-bottom: 20px;
-      overflow: hidden;
+      height: 6px; background: rgba(255,255,255,0.1);
+      border-radius: 3px; margin-bottom: 20px; overflow: hidden;
     }
     .timer-fill {
-      height: 100%;
-      background: var(--success);
-      width: 100%;
+      height: 100%; background: var(--success); width: 100%;
       transition: width 0.1s linear, background-color 0.3s;
     }
     .timer-fill.warning { background: var(--gold); }
     .timer-fill.danger { background: var(--danger); }
 
     .coin-display {
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 30px;
-      background: rgba(15,23,42,0.8);
-      border-radius: 50%;
-      padding: 15px;
+      width: 120px; height: 120px; margin: 0 auto 30px;
+      background: rgba(15,23,42,0.8); border-radius: 50%; padding: 15px;
       border: 2px solid rgba(255,255,255,0.1);
       box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
+      display: flex; align-items: center; justify-content: center; position: relative;
     }
     .coin-img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block; }
     
@@ -276,10 +239,8 @@
     }
     
     .score-popup {
-      position: absolute;
-      top: -10px; right: -20px;
-      font-size: 1.5rem; font-weight: 900;
-      color: var(--success);
+      position: absolute; top: -10px; right: -20px;
+      font-size: 1.5rem; font-weight: 900; color: var(--success);
       opacity: 0; pointer-events: none; z-index: 10;
     }
     .score-popup.pop { animation: popUp 1s ease forwards; }
@@ -290,25 +251,12 @@
       100% { opacity: 0; transform: translateY(-40px) scale(1); }
     }
 
-    .options-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
     .option-btn {
-      background: var(--card-bg);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: white;
-      padding: 16px 8px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
+      color: white; padding: 16px 8px; border-radius: 12px;
+      font-size: 0.9rem; font-weight: 500; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .option-btn.correct { background: var(--success); color: #022c22; border-color: var(--success); }
     .option-btn.wrong { background: var(--danger); border-color: var(--danger); opacity: 0.8; }
@@ -316,19 +264,10 @@
 
     .jokers-area { display: flex; gap: 10px; margin-top: auto; }
     .joker-btn {
-      flex: 1;
-      background: rgba(15,23,42,0.8);
-      border: 1px solid var(--accent);
-      color: var(--text);
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 0.8rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      cursor: pointer;
-      opacity: 0.5;
+      flex: 1; background: rgba(15,23,42,0.8); border: 1px solid var(--accent);
+      color: var(--text); padding: 10px; border-radius: 10px;
+      font-size: 0.8rem; display: flex; align-items: center; justify-content: center;
+      gap: 6px; cursor: pointer; opacity: 0.5;
     }
     .joker-btn.active { opacity: 1; background: rgba(139, 92, 246, 0.2); }
     .joker-btn.used { opacity: 0.3; filter: grayscale(1); cursor: default; }
@@ -336,89 +275,49 @@
     /* --- Quest & Badges --- */
     .quest-card {
       background: linear-gradient(to right, rgba(15,23,42,0.9), rgba(30,41,59,0.9));
-      border: 1px solid var(--primary);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 16px;
+      border: 1px solid var(--primary); border-radius: 16px; padding: 16px; margin-bottom: 16px;
     }
     .quest-profiles { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
     .profile-chip {
-      background: rgba(99, 102, 241, 0.2);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.2); padding: 6px 12px;
+      border-radius: 20px; font-size: 0.75rem; color: #a5b4fc;
       border: 1px solid rgba(99, 102, 241, 0.3);
       display: flex; align-items: center; gap: 4px;
-      text-decoration: none;
-      transition: background 0.2s;
-      cursor: pointer;
+      text-decoration: none; transition: background 0.2s; cursor: pointer;
     }
     .profile-chip:hover { background: rgba(99, 102, 241, 0.4); }
     .profile-chip.winner { border-color: var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.15); }
     
     .badge-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 10px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;
     }
     .badge-item {
-      background: rgba(0,0,0,0.3);
-      border-radius: 10px;
-      padding: 12px 5px;
-      text-align: center;
-      opacity: 0.5;
-      border: 1px solid rgba(255,255,255,0.05);
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: rgba(0,0,0,0.3); border-radius: 10px; padding: 12px 5px;
+      text-align: center; opacity: 0.5; border: 1px solid rgba(255,255,255,0.05);
+      position: relative; display: flex; flex-direction: column; align-items: center;
       min-height: 110px;
     }
     .badge-item.can-claim {
-      opacity: 1;
-      border-color: var(--primary);
-      box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
-      animation: pulseBorder 2s infinite;
+      opacity: 1; border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); animation: pulseBorder 2s infinite;
     }
     .badge-item.owned {
-      opacity: 1;
-      border-color: var(--gold);
+      opacity: 1; border-color: var(--gold);
       background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, rgba(0,0,0,0) 70%);
     }
-    
-    @keyframes pulseBorder {
-      0% { border-color: var(--primary); }
-      50% { border-color: white; }
-      100% { border-color: var(--primary); }
-    }
-
+    @keyframes pulseBorder { 0% { border-color: var(--primary); } 50% { border-color: white; } 100% { border-color: var(--primary); } }
     .badge-icon { font-size: 1.8rem; margin-bottom: 6px; display: block; }
     .badge-name { font-size: 0.65rem; font-weight: bold; }
     .badge-desc { font-size: 0.55rem; color: var(--text-muted); margin-top: 2px; }
-    
     .claim-btn {
-      margin-top: auto;
-      background: var(--success);
-      color: black;
-      border: none;
-      border-radius: 12px;
-      padding: 6px 12px;
-      font-size: 0.7rem;
-      font-weight: bold;
-      cursor: pointer;
-      animation: bounce 1s infinite;
+      margin-top: auto; background: var(--success); color: black; border: none;
+      border-radius: 12px; padding: 6px 12px; font-size: 0.7rem; font-weight: bold;
+      cursor: pointer; animation: bounce 1s infinite;
     }
     @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-    
     .claimed-tag {
-      margin-top: auto;
-      font-size: 0.6rem;
-      color: var(--gold);
-      border: 1px solid var(--gold);
-      padding: 2px 6px;
-      border-radius: 8px;
+      margin-top: auto; font-size: 0.6rem; color: var(--gold); border: 1px solid var(--gold);
+      padding: 2px 6px; border-radius: 8px;
     }
 
     /* --- Leaderboard --- */
@@ -429,7 +328,6 @@
       color: var(--text-muted); border-radius: 8px; cursor: pointer;
     }
     .lb-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-    
     .list-item {
       background: var(--card-bg); border-radius: 12px; padding: 12px;
       margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
@@ -446,14 +344,15 @@
       backdrop-filter: blur(10px);
       border-top: 1px solid rgba(255,255,255,0.1); 
       justify-content: space-around; 
-      z-index: 100;
+      z-index: 999; /* Always on top */
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
-      /* Increased padding to move it up slightly above home bar */
-      padding: 12px 0 25px 0; 
-      height: var(--nav-height);
+      /* Safe area support */
+      padding-bottom: env(safe-area-inset-bottom, 20px); 
+      height: auto;
+      min-height: var(--nav-height);
       box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
     }
     .nav-item {
@@ -638,14 +537,29 @@
 
 <script>
 /* ------------------------------------------------------------------
-   ICON MASTER V12 CONFIG & DATA
+   ICON MASTER V17 CONFIG & DATA
    ------------------------------------------------------------------ */
+// !! ÖNEMLİ: Buraya kendi gerçek Base Kontrat Adresini yazmalısın !!
+const CONTRACT_ADDRESS = "0x5827273795C64E328D8F27B5e8DDB2E4187b1dA6"; 
+
 const CONFIG = {
   totalTime: 7000, 
   baseChainId: '8453' // 8453 decimal for Base
 };
 
-// UPDATED BADGE LIST (Points updated: 100/200/250)
+// Minimal ABI for minting
+const MINIMAL_ABI = [
+  "function mint(uint256 id, uint256 amount) public"
+];
+
+// Badge Mapping
+const BADGE_ID_MAP = {
+    'daily_1': 1, 'alltime_10': 2, 'games_5': 3, 'games_10': 4,
+    'games_20': 5, 'games_50': 6, 'score_100': 7, 'score_200': 8,
+    'score_250': 9, 'joker_10': 10
+};
+
+// UPDATED BADGE LIST
 const BADGE_DEFS = [
   { id: 'daily_1', type: 'rank_daily', target: 1, icon: '🥇', title: 'Daily King', desc: 'Rank #1 Daily' },
   { id: 'alltime_10', type: 'rank_all', target: 10, icon: '🌟', title: 'Top 10 Elite', desc: 'Top 10 All Time' },
@@ -666,7 +580,6 @@ const BADGE_DEFS = [
 const COIN_DB = [
   {id: "bitcoin", symbol: "btc", name: "Bitcoin", img: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png"},
   {id: "ethereum", symbol: "eth", name: "Ethereum", img: "https://assets.coingecko.com/coins/images/279/large/ethereum.png"},
-  // ... (The full 250 coin list remains here as in previous versions) ...
   {id: "binancecoin", symbol: "bnb", name: "BNB", img: "https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png"},
   {id: "solana", symbol: "sol", name: "Solana", img: "https://assets.coingecko.com/coins/images/4128/large/solana.png"},
   {id: "ripple", symbol: "xrp", name: "XRP", img: "https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png"},
@@ -884,17 +797,16 @@ function initGame() {
   updateQuestLeaders();
 }
 
-// Use multiple listeners to be safe
 window.initGame = initGame;
 
 function saveState() {
-  localStorage.setItem('iconMasterV12', JSON.stringify(state));
+  localStorage.setItem('iconMasterV17', JSON.stringify(state));
   updateUI();
   checkBadges();
 }
 
 function loadState() {
-  const saved = localStorage.getItem('iconMasterV12');
+  const saved = localStorage.getItem('iconMasterV17');
   if (saved) {
     const parsed = JSON.parse(saved);
     state = {...state, ...parsed};
@@ -955,11 +867,11 @@ async function startGameFlow() {
     const signer = await provider.getSigner();
 
     // 3. İşlemi Hazırla (0 ETH Gönderimi - Onay Ekranı İçin)
-    // Gas limit ekleyerek "tahmin edilemedi" hatasını çözüyoruz
+    // Gas limitremoved to allow wallet estimation
     const tx = {
         to: userAddress, // Kendine gönder
         value: 0, // 0 ETH
-        gasLimit: 21000 // Standart ETH transferi limiti
+        data: "0x" // Empty data
     };
     
     console.log("Sending Transaction...");
@@ -1335,15 +1247,20 @@ async function claimBadge(id) {
     const signer = await provider.getSigner();
     const userAddress = await signer.getAddress();
 
-    const tx = { to: userAddress, value: 0 };
-    await signer.sendTransaction(tx);
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, MINIMAL_ABI, signer);
+    const badgeIdInt = BADGE_ID_MAP[id] || 0;
+
+    // Mint transaction without hardcoded gas limit
+    const tx = await contract.mint(badgeIdInt, 1);
+    console.log("Mint TX Sent:", tx.hash);
     
     state.claimedBadges.push(id);
     saveState(); 
     renderBadges();
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
   } catch (err) {
-    alert("Mint cancelled.");
+    console.error("Mint Error:", err);
+    alert("Mint failed: " + (err.reason || err.message));
   }
 }
 
