@@ -5,7 +5,7 @@
   <title>Icon Master - Farcaster Crypto Quiz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   
-  <!-- Game Icon (Favicon) -->
+  <!-- Game Icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 
   <!-- FARCASTER METADATA -->
@@ -24,16 +24,14 @@
   <script type="module">
     import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
     
-    window.sdk = sdk; // Make global for click handlers
+    window.sdk = sdk; 
 
     window.onload = async () => {
-      // Initialize Game Data
       loadState();
       updateUI();
       updateJokerStatus();
       updateQuestLeaders();
 
-      // Signal Ready to Farcaster
       try {
         await sdk.actions.ready();
         console.log("Farcaster SDK Ready!");
@@ -46,7 +44,7 @@
   <style>
     :root {
       --bg-color: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.85);
+      --card-bg: rgba(30, 41, 59, 0.9);
       --primary: #6366f1;
       --accent: #8b5cf6;
       --success: #22c55e;
@@ -86,7 +84,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(2, 6, 23, 0.9);
+      background: rgba(2, 6, 23, 0.95);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255,255,255,0.1);
       z-index: 20;
@@ -119,7 +117,6 @@
       overflow-y: auto;
       overflow-x: hidden;
       padding: 16px;
-      /* Add plenty of padding at bottom so content isn't hidden behind nav */
       padding-bottom: calc(var(--nav-height) + 40px); 
       position: relative;
     }
@@ -128,7 +125,6 @@
       display: none;
       animation: fadeIn 0.3s ease;
       width: 100%;
-      /* Allow height to grow with content */
       min-height: 100%; 
       flex-direction: column;
     }
@@ -152,10 +148,9 @@
       margin-top: 20px;
     }
     .btn-main:active { transform: scale(0.98); }
-    .btn-main:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
 
     .hero-card {
-      background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 24px;
       padding: 30px 20px;
@@ -532,11 +527,12 @@
 
 <script>
 /* ------------------------------------------------------------------
-   ICON MASTER V12 CONFIG & DATA
+   ICON MASTER V13.1 CONFIG & DATA
    ------------------------------------------------------------------ */
 const CONFIG = {
   totalTime: 7000, 
-  baseChainId: '0x2105'
+  baseChainId: '0x2105', 
+  contractAddress: "0x0000000000000000000000000000000000000000" 
 };
 
 // UPDATED BADGE LIST (Points updated: 100/200/250)
@@ -815,13 +811,21 @@ function navTo(screenName) {
 
 // --- GAMEFLOW ---
 async function startGameFlow() {
-  // Force Wallet Signature to Start
+  // Use Farcaster wallet via SDK provider if available
   try {
-    // Use the user's wallet provider if available
-    if (!window.ethereum) throw new Error("No wallet found");
+    let provider;
     
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    // Request access
+    // Check for Farcaster SDK wallet provider
+    if (window.sdk && window.sdk.wallet && window.sdk.wallet.ethProvider) {
+        provider = new ethers.BrowserProvider(window.sdk.wallet.ethProvider);
+    } else if (window.ethereum) {
+        // Fallback to window.ethereum (e.g. MetaMask) for dev/web
+        provider = new ethers.BrowserProvider(window.ethereum);
+    } else {
+        throw new Error("No wallet found");
+    }
+
+    // Request accounts
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
     
@@ -831,9 +835,8 @@ async function startGameFlow() {
     // Success
     launchGame();
   } catch (err) {
-    // Fallback Simulation for better UX in frames without full wallet support
-    console.log("Wallet sign failed or cancelled. Starting mock signature...");
-    simulateSignature();
+    console.log("Wallet sign failed or cancelled.", err);
+    alert("Signature required to play! Please connect your wallet.");
   }
 }
 
@@ -1189,16 +1192,21 @@ async function claimBadge(id) {
   if(state.claimedBadges.includes(id)) return;
   
   try {
-    // Check if wallet available, otherwise simulate
-    if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
-      const signer = await provider.getSigner();
-      await signer.signMessage(`Mint Badge: ${id}`);
+    let provider;
+    
+    // Check for Farcaster SDK wallet provider
+    if (window.sdk && window.sdk.wallet && window.sdk.wallet.ethProvider) {
+        provider = new ethers.BrowserProvider(window.sdk.wallet.ethProvider);
+    } else if (window.ethereum) {
+        // Fallback
+        provider = new ethers.BrowserProvider(window.ethereum);
     } else {
-      // Simulate for Farcaster mobile view if no wallet present
-      await new Promise(r => setTimeout(r, 1000)); 
+        throw new Error("No wallet found");
     }
+
+    await provider.send("eth_requestAccounts", []);
+    const signer = await provider.getSigner();
+    await signer.signMessage(`Mint Badge: ${id}`);
     
     state.claimedBadges.push(id);
     saveState(); 
