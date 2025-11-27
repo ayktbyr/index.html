@@ -111,13 +111,13 @@
     }
     .personal-best span { color: var(--gold); font-weight: bold; }
 
-    /* --- Content Area (Scrollable) --- */
+    /* --- Content Area --- */
     .content {
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       padding: 16px;
-      padding-bottom: calc(var(--nav-height) + 40px); 
+      padding-bottom: calc(var(--nav-height) + 60px); /* Extra space for bottom nav */
       position: relative;
       z-index: 10;
     }
@@ -239,12 +239,23 @@
       border: 2px solid rgba(255,255,255,0.2);
     }
     
+    /* Score & Game Over Popups */
     .score-popup {
       position: absolute; top: -10px; right: -20px;
       font-size: 1.5rem; font-weight: 900; color: var(--success);
       opacity: 0; pointer-events: none; z-index: 10;
     }
     .score-popup.pop { animation: popUp 1s ease forwards; }
+
+    /* NEW: Game Over Indicator inside the coin circle */
+    .game-over-text {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        font-size: 1.2rem; font-weight: 900; color: var(--danger);
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        text-align: center;
+        display: none; z-index: 15;
+        background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 8px;
+    }
 
     @keyframes popUp {
       0% { opacity: 1; transform: translateY(0) scale(0.8); }
@@ -261,7 +272,7 @@
     }
     .option-btn.correct { background: var(--success); color: #022c22; border-color: var(--success); }
     .option-btn.wrong { background: var(--danger); border-color: var(--danger); opacity: 0.8; }
-    .option-btn:disabled { cursor: default; }
+    .option-btn:disabled { cursor: default; opacity: 0.7; }
 
     .jokers-area { display: flex; gap: 10px; margin-top: auto; }
     .joker-btn {
@@ -322,15 +333,18 @@
     }
 
     /* --- Leaderboard --- */
-    .lb-filters { display:flex; gap:10px; margin-bottom: 15px; }
+    .lb-filters { 
+        display:flex; gap:10px; margin-bottom: 15px; 
+        position: relative; z-index: 30; /* Fix: High Z-index to be clickable */
+    }
     .lb-btn { 
-      flex: 1; padding: 8px; font-size: 0.8rem; 
+      flex: 1; padding: 12px; font-size: 0.85rem; 
       background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
       color: var(--text-muted); border-radius: 8px; cursor: pointer;
       transition: all 0.2s ease;
     }
     .lb-btn:active { transform: scale(0.95); }
-    .lb-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .lb-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: bold; }
     
     .list-item {
       background: var(--card-bg); border-radius: 12px; padding: 12px;
@@ -448,6 +462,7 @@
         <img id="coinImage" class="coin-img" src="" alt="Crypto Icon" onerror="handleImageError(this)">
         <div id="coinFallback">BTC</div>
         <div class="score-popup" id="scorePopup">+10</div>
+        <div class="game-over-text" id="gameOverIndicator">GAME OVER</div>
       </div>
 
       <div class="options-grid" id="optionsGrid"></div>
@@ -541,7 +556,7 @@
 
 <script>
 /* ------------------------------------------------------------------
-   ICON MASTER V18 CONFIG & DATA
+   ICON MASTER V19 CONFIG & DATA
    ------------------------------------------------------------------ */
 // !! ÖNEMLİ: Buraya kendi gerçek Base Kontrat Adresini yazmalısın !!
 const CONTRACT_ADDRESS = "0x5827273795C64E328D8F27B5e8DDB2E4187b1dA6"; 
@@ -682,53 +697,6 @@ const COIN_DB = [
   {id: "ardor", symbol: "ardr", name: "Ardor", img: "https://assets.coingecko.com/coins/images/557/large/ardor.png"},
   {id: "loom-network", symbol: "loom", name: "Loom Network", img: "https://assets.coingecko.com/coins/images/3103/large/Loom.png"},
   {id: "rif-token", symbol: "rif", name: "RSK Infrastructure Framework", img: "https://assets.coingecko.com/coins/images/7454/large/RIF.png"},
-  {id: "tomochain", symbol: "tomo", name: "TomoChain", img: "https://assets.coingecko.com/coins/images/2819/large/logo-tomochain-200.png"},
-  {id: "quarkchain", symbol: "qkc", name: "QuarkChain", img: "https://assets.coingecko.com/coins/images/4340/large/QurakChain.png"},
-  {id: "thunder-token", symbol: "tt", name: "ThunderCore", img: "https://assets.coingecko.com/coins/images/8488/large/thundercore.png"},
-  {id: "iris-network", symbol: "iris", name: "IRISnet", img: "https://assets.coincap.io/assets/icons/iris@2x.png"},
-  {id: "marlin", symbol: "pond", name: "Marlin", img: "https://assets.coincap.io/assets/icons/pond@2x.png"},
-  {id: "akropolis", symbol: "akro", name: "Akropolis", img: "https://assets.coingecko.com/coins/images/7473/large/akropolis.png"},
-  {id: "dia-data", symbol: "dia", name: "DIA", img: "https://assets.coingecko.com/coins/images/11955/large/dia.png"},
-  {id: "dock", symbol: "dock", name: "Dock", img: "https://assets.coingecko.com/coins/images/3719/large/dock-new.png"},
-  {id: "pundix-new", symbol: "pundix", name: "Pundi X", img: "https://assets.coingecko.com/coins/images/14589/large/pundix.png"},
-  {id: "wanchain", symbol: "wan", name: "Wanchain", img: "https://assets.coingecko.com/coins/images/3358/large/wanchain-logo.png"},
-  {id: "cortex", symbol: "ctxc", name: "Cortex", img: "https://assets.coingecko.com/coins/images/3757/large/Cortex.png"},
-  {id: "lto-network", symbol: "lto", name: "LTO Network", img: "https://assets.coingecko.com/coins/images/7533/large/lto-logo.png"},
-  {id: "fio-protocol", symbol: "fio", name: "FIO Protocol", img: "https://assets.coingecko.com/coins/images/11822/large/FIO_Token_Logo.png"},
-  {id: "aergo", symbol: "aergo", name: "Aergo", img: "https://assets.coingecko.com/coins/images/4489/large/aergo.png"},
-  {id: "steem", symbol: "steem", name: "Steem", img: "https://assets.coingecko.com/coins/images/303/large/steem.png"},
-  {id: "syscoin", symbol: "sys", name: "Syscoin", img: "https://assets.coincap.io/assets/icons/sys@2x.png"},
-  {id: "komodo", symbol: "kmd", name: "Komodo", img: "https://assets.coingecko.com/coins/images/611/large/KMD_Mark_Color.png"},
-  {id: "bluzelle", symbol: "blz", name: "Bluzelle", img: "https://assets.coincap.io/assets/icons/blz@2x.png"},
-  {id: "data", symbol: "dta", name: "DATA", img: "https://assets.coingecko.com/coins/images/2627/large/data.png"},
-  {id: "propy", symbol: "pro", name: "Propy", img: "https://assets.coingecko.com/coins/images/735/large/propy.png"},
-  {id: "covalent", symbol: "cqt", name: "Covalent", img: "https://assets.coingecko.com/coins/images/15473/large/covalent.png"},
-  {id: "ampleforth", symbol: "ampl", name: "Ampleforth", img: "https://assets.coingecko.com/coins/images/8776/large/Ampleforth_rebrand_logo.png"},
-  {id: "verasity", symbol: "vra", name: "Verasity", img: "https://assets.coincap.io/assets/icons/vra@2x.png"},
-  {id: "alien-worlds", symbol: "tlm", name: "Alien Worlds", img: "https://assets.coingecko.com/coins/images/14710/large/tlm.png"},
-  {id: "aurora-near", symbol: "aurora", name: "Aurora", img: "https://assets.coingecko.com/coins/images/20593/large/aurora.jpeg"},
-  {id: "pivx", symbol: "pivx", name: "PIVX", img: "https://assets.coincap.io/assets/icons/pivx@2x.png"},
-  {id: "ad-shares", symbol: "ads", name: "Adshares", img: "https://assets.coingecko.com/coins/images/4962/large/ADS_Logotype_Blue.png"},
-  {id: "polkastarter", symbol: "pols", name: "Polkastarter", img: "https://assets.coingecko.com/coins/images/12648/large/polkastarter.png"},
-  {id: "energy-web-token", symbol: "ewt", name: "Energy Web", img: "https://assets.coingecko.com/coins/images/10636/large/Energy_Web.png"},
-  {id: "telos", symbol: "tlos", name: "Telos", img: "https://assets.coingecko.com/coins/images/7588/large/tlos.png"},
-  {id: "constellation-labs", symbol: "dag", name: "Constellation", img: "https://assets.coingecko.com/coins/images/4645/large/DAG.png"},
-  {id: "orbs", symbol: "orbs", name: "Orbs", img: "https://assets.coingecko.com/coins/images/8133/large/Orbs.png"},
-  {id: "bancor", symbol: "bnt", name: "Bancor Network", img: "https://assets.coingecko.com/coins/images/736/large/bancor.png"},
-  {id: "celsius-degree-token", symbol: "cel", name: "Celsius", img: "https://assets.coingecko.com/coins/images/3263/large/CEL.png"},
-  {id: "quarkchain", symbol: "qkc", name: "QuarkChain", img: "https://assets.coingecko.com/coins/images/4340/large/QurakChain.png"},
-  {id: "singularitydao", symbol: "sdao", name: "SingularityDAO", img: "https://assets.coingecko.com/coins/images/15452/large/sdao.png"},
-  {id: "rally-2", symbol: "rly", name: "Rally", img: "https://assets.coingecko.com/coins/images/12843/large/rly.png"},
-  {id: "persistence", symbol: "xprt", name: "Persistence", img: "https://assets.coingecko.com/coins/images/14467/large/xprt.png"},
-  {id: "verus-coin", symbol: "vrsc", name: "Verus Coin", img: "https://assets.coingecko.com/coins/images/4447/large/verus.png"},
-  {id: "kleros", symbol: "pnk", name: "Kleros", img: "https://assets.coingecko.com/coins/images/4183/large/kleros_symbol.png"},
-  {id: "quarkchain", symbol: "qkc", name: "QuarkChain", img: "https://assets.coingecko.com/coins/images/4340/large/QurakChain.png"},
-  {id: "utrust", symbol: "utk", name: "xMoney", img: "https://assets.coingecko.com/coins/images/1435/large/utk.png"},
-  {id: "adventure-gold", symbol: "agld", name: "Adventure Gold", img: "https://assets.coingecko.com/coins/images/18165/large/agld.png"},
-  {id: "gods-unchained", symbol: "gods", name: "Gods Unchained", img: "https://assets.coingecko.com/coins/images/19441/large/gods.png"},
-  {id: "radworks", symbol: "rad", name: "Radworks", img: "https://assets.coingecko.com/coins/images/15456/large/rad.png"},
-  {id: "badger-dao", symbol: "badger", name: "Badger DAO", img: "https://assets.coingecko.com/coins/images/13292/large/badger.png"},
-  {id: "rif-token", symbol: "rif", name: "RIF", img: "https://assets.coingecko.com/coins/images/7454/large/RIF.png"},
   {id: "ergo", symbol: "erg", name: "Ergo", img: "https://assets.coingecko.com/coins/images/2484/large/ergo-logo.png"},
   {id: "lisk", symbol: "lsk", name: "Lisk", img: "https://assets.coingecko.com/coins/images/385/large/Lisk_Symbol_Blue.png"},
   {id: "nano", symbol: "xno", name: "Nano", img: "https://assets.coingecko.com/coins/images/756/large/nano.png"},
@@ -807,13 +775,13 @@ function initGame() {
 window.initGame = initGame;
 
 function saveState() {
-  localStorage.setItem('iconMasterV18', JSON.stringify(state));
+  localStorage.setItem('iconMasterV19', JSON.stringify(state));
   updateUI();
   checkBadges();
 }
 
 function loadState() {
-  const saved = localStorage.getItem('iconMasterV18');
+  const saved = localStorage.getItem('iconMasterV19');
   if (saved) {
     const parsed = JSON.parse(saved);
     state = {...state, ...parsed};
@@ -872,7 +840,6 @@ async function startGameFlow() {
     const signer = await provider.getSigner();
 
     // 3. İşlemi Hazırla (0 ETH Gönderimi - Onay Ekranı İçin)
-    // Gas limit ekleyerek "tahmin edilemedi" hatasını çözüyoruz
     const tx = {
         to: userAddress, // Kendine gönder
         value: 0, // 0 ETH
@@ -930,6 +897,7 @@ function nextLevel() {
   document.getElementById('scorePopup').classList.remove('pop');
   document.getElementById('coinImage').style.display = 'block';
   document.getElementById('coinFallback').style.display = 'none';
+  document.getElementById('gameOverIndicator').style.display = 'none'; // Hide Game Over text
 
   let pool = COIN_DB.filter(c => !usedCoinIds.has(c.id));
   // Simple fallback if pool exhausted
@@ -1023,8 +991,6 @@ function handleAnswer(selectedId, btnElement) {
 
   // 1. Disable all buttons to prevent multi-click
   const allBtns = document.querySelectorAll('.option-btn');
-  // But only if not using double guess logic below...
-  // Actually, disabling all immediately is safer. We will re-enable if double guess active.
   allBtns.forEach(b => b.disabled = true);
 
   const isCorrect = selectedId === currentCoin.id;
@@ -1069,6 +1035,9 @@ function handleAnswer(selectedId, btnElement) {
     allBtns.forEach(b => {
         if (b.innerText === currentCoin.name) b.classList.add('correct');
     });
+    
+    // Show GAME OVER Text
+    document.getElementById('gameOverIndicator').style.display = 'block';
 
     // Show Game Over Modal after delay
     setTimeout(() => endGame("Wrong Answer!"), 1500);
@@ -1082,6 +1051,7 @@ function handleTimeout() {
       b.disabled = true;
       if (b.innerText === currentCoin.name) b.classList.add('correct');
   });
+  document.getElementById('gameOverIndicator').style.display = 'block';
   setTimeout(() => endGame("Time's Up!"), 1500);
 }
 
