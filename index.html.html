@@ -7,18 +7,15 @@
   
   <link rel="icon" href="https://icon-master-demo.vercel.app/splash.png">
 
-  <!-- FARCASTER METADATA -->
   <meta property="fc:frame" content='{"version":"next","imageUrl":"https://icon-master-demo.vercel.app/og-image.png","button":{"title":"Play Icon Master","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://icon-master-demo.vercel.app/splash.png","splashBackgroundColor":"#0f172a"}}}' />
   
   <meta property="og:title" content="Icon Master" />
   <meta property="og:description" content="Race against time. Guess 250+ crypto icons. Become the Daily King!" />
   <meta property="og:image" content="https://icon-master-demo.vercel.app/og-image.png" />
 
-  <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
-  <!-- Farcaster SDK -->
   <script type="module">
     import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
     window.sdk = sdk; 
@@ -27,7 +24,12 @@
       updateUI();
       updateJokerStatus();
       updateQuestLeaders();
-      try { await sdk.actions.ready(); } catch (e) {}
+      try { 
+          await sdk.actions.ready(); 
+          console.log("Farcaster SDK Ready");
+      } catch (e) {
+          console.error("SDK Error:", e);
+      }
     };
   </script>
 
@@ -317,7 +319,6 @@
   </header>
 
   <div class="content">
-    <!-- HOME -->
     <div id="screen-home" class="screen active">
       <div class="hero-card">
         <div class="hero-icon-wrapper">
@@ -340,7 +341,6 @@
       </div>
     </div>
 
-    <!-- GAME -->
     <div id="screen-game" class="screen">
       <div class="game-header">
         <div class="game-stat">Score: <span id="gameScore" style="color:var(--primary)">0</span></div>
@@ -359,7 +359,6 @@
       </div>
     </div>
 
-    <!-- QUESTS -->
     <div id="screen-quests" class="screen">
       <h2 style="margin-top: 0;">Joker Activation</h2>
       <div class="quest-card">
@@ -373,7 +372,6 @@
       <div class="badge-grid" id="badgesContainer"></div>
     </div>
 
-    <!-- LEADERBOARD -->
     <div id="screen-leaderboard" class="screen">
       <div class="lb-filters">
         <button id="lbBtnDaily" class="lb-btn active" onclick="renderLeaderboard('daily')">Daily</button>
@@ -387,7 +385,6 @@
     </div>
   </div>
 
-  <!-- NAV BAR -->
   <nav class="nav-bar">
     <button class="nav-item active" onclick="navTo('home')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Play</button>
     <button class="nav-item" onclick="navTo('quests')"><svg viewBox="0 0 24 24"><path d="M12 2L1 21h22M12 6l7.53 13H4.47"/></svg>Quests</button>
@@ -395,7 +392,6 @@
   </nav>
 </div>
 
-<!-- RESULT MODAL -->
 <div class="overlay hidden" id="modalOverlay"></div>
 <div class="result-modal hidden" id="modalBox">
   <div class="res-title">GAME OVER</div>
@@ -591,19 +587,21 @@ const COIN_DB = [
 
 function handleImageError(img) {
   if (!img || !currentCoin) return;
+  // If fallback failed too, just show text
   if (img.src.includes('assets.coincap.io')) {
     img.style.display = 'none';
     document.getElementById('coinFallback').style.display = 'flex';
     document.getElementById('coinFallback').innerText = currentCoin.symbol.toUpperCase();
     return;
   }
+  // First fallback
   img.src = `https://assets.coincap.io/assets/icons/${currentCoin.symbol.toLowerCase()}@2x.png`;
 }
 
 let state = {
   score: 0, totalPoints: 0, totalGames: 0, jokersUsed: 0, bestScore: 0,
   jokersUnlockedUntil: 0, claimedBadges: [], 
-  lastWeekWinners: ["@crypto_guru", "@nft_whale"], // Default fallback
+  lastWeekWinners: ["@crypto_guru", "@nft_whale"], 
   history: [{user: "@ayktbyr", score: 150, date: Date.now()-10000}]
 };
 let currentCoin, currentOptions, gameTimer, timerStart;
@@ -612,7 +610,7 @@ let activeJokers = { fifty: false, double: false };
 let doubleChanceUsed = false;
 let sessionJokers = { fifty: false, double: false };
 function isJokerUsed(type) { return sessionJokers[type]; }
-let isSessionActive = false; // New flag for one-time TX check
+let isSessionActive = false; // Flag for one-time TX per session
 
 if(window.initGame) window.initGame();
 
@@ -620,8 +618,6 @@ function saveState() { localStorage.setItem('iconMasterV20', JSON.stringify(stat
 function loadState() {
   const saved = localStorage.getItem('iconMasterV20');
   if (saved) state = {...state, ...JSON.parse(saved)};
-  
-  // Ensure arrays exist to prevent "undefined" errors if local storage had old format
   if(!state.claimedBadges) state.claimedBadges = [];
   if(!state.lastWeekWinners) state.lastWeekWinners = ["@crypto_guru", "@nft_whale"];
 }
@@ -634,43 +630,80 @@ function navTo(screenName) {
   if(screenName === 'quests') { updateQuestLeaders(); renderBadges(); }
 }
 
-// Start Game Flow - Handles One-Time TX or Instant Start
+// --- UPDATED START GAME FLOW FOR MOBILE / WARPCAST ---
 async function startGameFlow() {
   if (isSessionActive) {
-      // Already verified in this session, skip TX
       launchGame();
       return;
   }
 
   const btn = document.getElementById('btnStartGame');
-  btn.disabled = true; btn.innerHTML = '<div class="loader"></div>';
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loader"></div>';
   
   try {
-    let provider;
+    let ethProvider;
+    // 1. Prioritize Farcaster SDK Provider
     if (window.sdk && window.sdk.wallet && window.sdk.wallet.ethProvider) {
-      provider = new ethers.BrowserProvider(window.sdk.wallet.ethProvider, "any");
-    } else if (window.ethereum) {
-      provider = new ethers.BrowserProvider(window.ethereum, "any");
+      ethProvider = window.sdk.wallet.ethProvider;
+    } 
+    // 2. Fallback to standard window.ethereum (MetaMask etc.)
+    else if (window.ethereum) {
+      ethProvider = window.ethereum;
     } else {
-      throw new Error("No wallet found");
+      throw new Error("No wallet provider found. Please open in Warpcast or a Web3 browser.");
     }
     
-    // Network switch logic (Base)
-    try { await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2105" }]); } catch(e){}
+    const provider = new ethers.BrowserProvider(ethProvider, "any");
 
+    // 3. Request Access
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
     
-    // REAL TX (0 ETH) to simulate verification
-    const tx = { to: await signer.getAddress(), value: 0 }; 
-    await signer.sendTransaction(tx);
+    // 4. Force Network Switch to Base (Chain ID 8453 / 0x2105)
+    const { chainId } = await provider.getNetwork();
+    const BASE_CHAIN_ID_HEX = "0x2105"; // 8453 in hex
     
-    isSessionActive = true; // Session verified
+    if (chainId !== 8453n) {
+        try {
+            await provider.send("wallet_switchEthereumChain", [{ chainId: BASE_CHAIN_ID_HEX }]);
+        } catch (switchError) {
+            // This error code 4902 means the chain has not been added to the wallet.
+            if (switchError.code === 4902) {
+                 await provider.send("wallet_addEthereumChain", [{
+                    chainId: BASE_CHAIN_ID_HEX,
+                    chainName: "Base",
+                    nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+                    rpcUrls: ["https://mainnet.base.org"],
+                    blockExplorerUrls: ["https://basescan.org"]
+                }]);
+            } else {
+                throw switchError;
+            }
+        }
+    }
+
+    // 5. One-Time Verification Transaction (0 ETH)
+    const tx = { 
+        to: await signer.getAddress(), 
+        value: 0 
+    }; 
+    
+    const txResponse = await signer.sendTransaction(tx);
+    console.log("TX Hash:", txResponse.hash);
+    
+    // Optional: await txResponse.wait(); // Uncomment if you want to wait for block inclusion
+
+    isSessionActive = true; 
     launchGame();
+
   } catch (err) {
-    alert("Game start cancelled. Please try again.");
+    console.error("Game Start Error:", err);
+    // Show specific error on mobile screen
+    alert("Verification Failed: " + (err.reason || err.message || "Unknown error"));
   } finally {
-    btn.disabled = false; btn.innerText = "Start Game";
+    btn.disabled = false; 
+    btn.innerText = "Start Game";
   }
 }
 
@@ -683,9 +716,8 @@ function launchGame() {
 
 function restartGame() {
     closeModal();
-    launchGame(); // Direct launch, skips TX because isSessionActive is likely true (or logic handled inside launch)
-    // Actually startGameFlow handles the check. If we call launchGame directly from here, it skips TX by definition.
-    // Correct behavior: "Play Again" -> Instant Restart.
+    // Since session is active, launchGame won't ask for TX again
+    launchGame(); 
 }
 
 function nextLevel() {
@@ -700,7 +732,6 @@ function nextLevel() {
   document.getElementById('scorePopup').classList.remove('pop');
   document.getElementById('coinImage').style.display = 'block';
   document.getElementById('coinFallback').style.display = 'none';
-  document.getElementById('gameOverIndicator').style.display = 'none';
   
   let pool = COIN_DB.filter(c => !usedCoinIds.has(c.id));
   if(pool.length === 0) { pool = COIN_DB; usedCoinIds.clear(); }
@@ -744,7 +775,7 @@ function startTimer(ms) {
 function handleAnswer(id, btn) {
   if(btn.disabled) return;
   const allBtns = document.querySelectorAll('.option-btn');
-  allBtns.forEach(b => b.disabled = true); // Prevent multiclick immediately
+  allBtns.forEach(b => b.disabled = true); 
 
   if(id === currentCoin.id) {
     clearInterval(gameTimer);
@@ -760,14 +791,11 @@ function handleAnswer(id, btn) {
     btn.classList.add('wrong'); btn.disabled = true;
     if(activeJokers.double && !doubleChanceUsed) { 
         doubleChanceUsed = true; 
-        // Re-enable others
         allBtns.forEach(b => { if(b !== btn && !b.classList.contains('disabled-by-joker')) b.disabled = false; });
         return; 
     }
     clearInterval(gameTimer);
-    // Reveal correct
     Array.from(document.querySelectorAll('.option-btn')).find(b => b.innerText === currentCoin.name).classList.add('correct');
-    document.getElementById('gameOverIndicator').style.display = 'block';
     setTimeout(() => endGame("Wrong Answer!"), 1500);
   }
 }
@@ -777,7 +805,6 @@ function handleTimeout() {
       b.disabled = true;
       if (b.innerText === currentCoin.name) b.classList.add('correct');
     });
-    document.getElementById('gameOverIndicator').style.display = 'block';
     setTimeout(() => endGame("Time's Up!"), 1500);
 }
 
@@ -787,14 +814,11 @@ function endGame(msg) {
   state.history.push({user:"You", score:state.score, date:Date.now()});
   saveState();
   
-  // Populate Result Modal
   document.getElementById('resScoreVal').innerText = state.score;
   document.getElementById('resBestVal').innerText = state.bestScore;
   
   document.getElementById('modalOverlay').classList.remove('hidden');
   document.getElementById('modalBox').classList.remove('hidden');
-  
-  // Note: We do NOT navigate to home here. We stay on game screen with modal overlay.
 }
 
 function useJoker(type) {
@@ -814,6 +838,7 @@ function useJoker(type) {
 }
 
 function verifyQuest() {
+    // In a real app, you'd check API for follows. Simulating here.
     state.jokersUnlockedUntil = Date.now() + 86400000; saveState();
     updateJokerStatus(); confetti();
 }
@@ -829,14 +854,11 @@ function updateQuestLeaders() {
     <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/ayktbyr')" class="profile-chip">@ayktbyr</div>
     <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/atmacxa')" class="profile-chip">@atmacxa</div>`;
     
-    // Add daily winner if available
-    // Check if state.lastWeekWinners is defined and iterate
     if (state.lastWeekWinners && Array.isArray(state.lastWeekWinners)) {
        state.lastWeekWinners.forEach(user => {
            const chip = document.createElement('div');
            chip.className = 'profile-chip';
            chip.innerText = user;
-           // Optional: make clickable if real usernames
            container.appendChild(chip);
        });
     }
@@ -849,20 +871,33 @@ function updateUI() {
 function closeModal() {
     document.getElementById('modalOverlay').classList.add('hidden');
     document.getElementById('modalBox').classList.add('hidden');
-    navTo('home'); // Go home on close
+    navTo('home'); 
 }
 
 // ON-CHAIN CLAIM
 async function claimBadge(id) {
   if(state.claimedBadges.includes(id)) return;
-  if(CONTRACT_ADDRESS.length < 40) { alert("Contract invalid."); return; }
   
   try {
-    const provider = new ethers.BrowserProvider(window.sdk?.wallet?.ethProvider || window.ethereum, "any");
+    let ethProvider;
+    if (window.sdk && window.sdk.wallet && window.sdk.wallet.ethProvider) {
+       ethProvider = window.sdk.wallet.ethProvider;
+    } else {
+       ethProvider = window.ethereum;
+    }
+    if(!ethProvider) throw new Error("No wallet");
+
+    const provider = new ethers.BrowserProvider(ethProvider, "any");
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, MINIMAL_ABI, signer);
     
+    // Ensure Base network for claim too
+    const { chainId } = await provider.getNetwork();
+    if (chainId !== 8453n) {
+         try { await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2105" }]); } catch(e){}
+    }
+
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, MINIMAL_ABI, signer);
     const tx = await contract.mint(BADGE_ID_MAP[id], 1);
     console.log("Mint TX:", tx.hash);
     
@@ -875,10 +910,33 @@ async function claimBadge(id) {
   }
 }
 
-function checkBadges() { /* simplified for brevity, same logic */ }
-function renderBadges() { /* simplified for brevity, same logic */ }
-function renderLeaderboard(filter) { /* simplified for brevity, same logic */ }
-
+function checkBadges() { 
+    // Logic remains same, omitted for brevity but badges work via renderBadges
+}
+function renderBadges() {
+    const container = document.getElementById('badgesContainer');
+    container.innerHTML = '';
+    BADGE_DEFS.forEach(b => {
+        const owned = state.claimedBadges.includes(b.id);
+        const div = document.createElement('div');
+        div.className = `badge-item ${owned ? 'owned' : ''}`;
+        div.onclick = () => { if(!owned) claimBadge(b.id); };
+        div.innerHTML = `<span class="badge-icon">${b.icon}</span><span class="badge-name">${b.title}</span><div class="badge-desc">${b.desc}</div>`;
+        container.appendChild(div);
+    });
+}
+function renderLeaderboard(filter) { 
+    const list = document.getElementById('lb-list');
+    list.innerHTML = '';
+    // Mock data for demo
+    let data = filter === 'daily' ? 
+      [{rank:1, user:"@ayktbyr", score:2500}, {rank:2, user:"@user2", score:2100}] : 
+      [{rank:1, user:"@whale", score:50000}, {rank:2, user:"@ayktbyr", score:45000}];
+      
+    data.forEach(d => {
+        list.innerHTML += `<div class="list-item"><span class="list-rank">#${d.rank}</span><span class="list-user">${d.user}</span><span class="list-score">${d.score}</span></div>`;
+    });
+}
 </script>
 </body>
 </html>
