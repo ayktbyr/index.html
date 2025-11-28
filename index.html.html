@@ -422,12 +422,14 @@
     <div id="screen-home" class="screen active">
       
       <div class="hero-card">
+        <!-- SVG Icon -->
         <div class="hero-icon-wrapper">
           <svg class="hero-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
 
+        <!-- Stats Bar -->
         <div class="hero-stats-bar">
           <div class="stat-pill">
             🔥 Streak: <b id="homeStreak">0</b>
@@ -459,6 +461,7 @@
       <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
 
       <div class="coin-display">
+        <!-- Image with backup logic -->
         <img id="coinImage" class="coin-img" src="" alt="Crypto Icon" onerror="handleImageError(this)">
         <div id="coinFallback">BTC</div>
         <div class="score-popup" id="scorePopup">+10</div>
@@ -697,6 +700,53 @@ const COIN_DB = [
   {id: "ardor", symbol: "ardr", name: "Ardor", img: "https://assets.coingecko.com/coins/images/557/large/ardor.png"},
   {id: "loom-network", symbol: "loom", name: "Loom Network", img: "https://assets.coingecko.com/coins/images/3103/large/Loom.png"},
   {id: "rif-token", symbol: "rif", name: "RSK Infrastructure Framework", img: "https://assets.coingecko.com/coins/images/7454/large/RIF.png"},
+  {id: "tomochain", symbol: "tomo", name: "TomoChain", img: "https://assets.coingecko.com/coins/images/2819/large/logo-tomochain-200.png"},
+  {id: "quarkchain", symbol: "qkc", name: "QuarkChain", img: "https://assets.coingecko.com/coins/images/4340/large/QurakChain.png"},
+  {id: "thunder-token", symbol: "tt", name: "ThunderCore", img: "https://assets.coingecko.com/coins/images/8488/large/thundercore.png"},
+  {id: "iris-network", symbol: "iris", name: "IRISnet", img: "https://assets.coincap.io/assets/icons/iris@2x.png"},
+  {id: "marlin", symbol: "pond", name: "Marlin", img: "https://assets.coincap.io/assets/icons/pond@2x.png"},
+  {id: "akropolis", symbol: "akro", name: "Akropolis", img: "https://assets.coingecko.com/coins/images/7473/large/akropolis.png"},
+  {id: "dia-data", symbol: "dia", name: "DIA", img: "https://assets.coingecko.com/coins/images/11955/large/dia.png"},
+  {id: "dock", symbol: "dock", name: "Dock", img: "https://assets.coingecko.com/coins/images/3719/large/dock-new.png"},
+  {id: "pundix-new", symbol: "pundix", name: "Pundi X", img: "https://assets.coingecko.com/coins/images/14589/large/pundix.png"},
+  {id: "wanchain", symbol: "wan", name: "Wanchain", img: "https://assets.coingecko.com/coins/images/3358/large/wanchain-logo.png"},
+  {id: "cortex", symbol: "ctxc", name: "Cortex", img: "https://assets.coingecko.com/coins/images/3757/large/Cortex.png"},
+  {id: "lto-network", symbol: "lto", name: "LTO Network", img: "https://assets.coingecko.com/coins/images/7533/large/lto-logo.png"},
+  {id: "fio-protocol", symbol: "fio", name: "FIO Protocol", img: "https://assets.coingecko.com/coins/images/11822/large/FIO_Token_Logo.png"},
+  {id: "aergo", symbol: "aergo", name: "Aergo", img: "https://assets.coingecko.com/coins/images/4489/large/aergo.png"},
+  {id: "steem", symbol: "steem", name: "Steem", img: "https://assets.coingecko.com/coins/images/303/large/steem.png"},
+  {id: "syscoin", symbol: "sys", name: "Syscoin", img: "https://assets.coincap.io/assets/icons/sys@2x.png"},
+  {id: "komodo", symbol: "kmd", name: "Komodo", img: "https://assets.coingecko.com/coins/images/611/large/KMD_Mark_Color.png"},
+  {id: "bluzelle", symbol: "blz", name: "Bluzelle", img: "https://assets.coincap.io/assets/icons/blz@2x.png"},
+  {id: "data", symbol: "dta", name: "DATA", img: "https://assets.coingecko.com/coins/images/2627/large/data.png"},
+  {id: "propy", symbol: "pro", name: "Propy", img: "https://assets.coingecko.com/coins/images/735/large/propy.png"},
+  {id: "covalent", symbol: "cqt", name: "Covalent", img: "https://assets.coingecko.com/coins/images/15473/large/covalent.png"},
+  {id: "ampleforth", symbol: "ampl", name: "Ampleforth", img: "https://assets.coingecko.com/coins/images/8776/large/Ampleforth_rebrand_logo.png"},
+  {id: "verasity", symbol: "vra", name: "Verasity", img: "https://assets.coincap.io/assets/icons/vra@2x.png"},
+  {id: "alien-worlds", symbol: "tlm", name: "Alien Worlds", img: "https://assets.coingecko.com/coins/images/14710/large/tlm.png"},
+  {id: "aurora-near", symbol: "aurora", name: "Aurora", img: "https://assets.coingecko.com/coins/images/20593/large/aurora.jpeg"},
+  {id: "pivx", symbol: "pivx", name: "PIVX", img: "https://assets.coincap.io/assets/icons/pivx@2x.png"},
+  {id: "ad-shares", symbol: "ads", name: "Adshares", img: "https://assets.coingecko.com/coins/images/4962/large/ADS_Logotype_Blue.png"},
+  {id: "polkastarter", symbol: "pols", name: "Polkastarter", img: "https://assets.coingecko.com/coins/images/12648/large/polkastarter.png"},
+  {id: "energy-web-token", symbol: "ewt", name: "Energy Web", img: "https://assets.coingecko.com/coins/images/10636/large/Energy_Web.png"},
+  {id: "telos", symbol: "tlos", name: "Telos", img: "https://assets.coingecko.com/coins/images/7588/large/tlos.png"},
+  {id: "constellation-labs", symbol: "dag", name: "Constellation", img: "https://assets.coingecko.com/coins/images/4645/large/DAG.png"},
+  {id: "orbs", symbol: "orbs", name: "Orbs", img: "https://assets.coingecko.com/coins/images/8133/large/Orbs.png"},
+  {id: "bancor", symbol: "bnt", name: "Bancor Network", img: "https://assets.coingecko.com/coins/images/736/large/bancor.png"},
+  {id: "celsius-degree-token", symbol: "cel", name: "Celsius", img: "https://assets.coingecko.com/coins/images/3263/large/CEL.png"},
+  {id: "quarkchain", symbol: "qkc", name: "QuarkChain", img: "https://assets.coingecko.com/coins/images/4340/large/QurakChain.png"},
+  {id: "singularitydao", symbol: "sdao", name: "SingularityDAO", img: "https://assets.coingecko.com/coins/images/15452/large/sdao.png"},
+  {id: "rally-2", symbol: "rly", name: "Rally", img: "https://assets.coingecko.com/coins/images/12843/large/rly.png"},
+  {id: "persistence", symbol: "xprt", name: "Persistence", img: "https://assets.coingecko.com/coins/images/14467/large/xprt.png"},
+  {id: "verus-coin", symbol: "vrsc", name: "Verus Coin", img: "https://assets.coingecko.com/coins/images/4447/large/verus.png"},
+  {id: "kleros", symbol: "pnk", name: "Kleros", img: "https://assets.coingecko.com/coins/images/4183/large/kleros_symbol.png"},
+  {id: "quarkchain", symbol: "qkc", name: "QuarkChain", img: "https://assets.coingecko.com/coins/images/4340/large/QurakChain.png"},
+  {id: "utrust", symbol: "utk", name: "xMoney", img: "https://assets.coingecko.com/coins/images/1435/large/utk.png"},
+  {id: "adventure-gold", symbol: "agld", name: "Adventure Gold", img: "https://assets.coingecko.com/coins/images/18165/large/agld.png"},
+  {id: "gods-unchained", symbol: "gods", name: "Gods Unchained", img: "https://assets.coingecko.com/coins/images/19441/large/gods.png"},
+  {id: "radworks", symbol: "rad", name: "Radworks", img: "https://assets.coingecko.com/coins/images/15456/large/rad.png"},
+  {id: "badger-dao", symbol: "badger", name: "Badger DAO", img: "https://assets.coingecko.com/coins/images/13292/large/badger.png"},
+  {id: "rif-token", symbol: "rif", name: "RIF", img: "https://assets.coingecko.com/coins/images/7454/large/RIF.png"},
   {id: "ergo", symbol: "erg", name: "Ergo", img: "https://assets.coingecko.com/coins/images/2484/large/ergo-logo.png"},
   {id: "lisk", symbol: "lsk", name: "Lisk", img: "https://assets.coingecko.com/coins/images/385/large/Lisk_Symbol_Blue.png"},
   {id: "nano", symbol: "xno", name: "Nano", img: "https://assets.coingecko.com/coins/images/756/large/nano.png"},
@@ -775,13 +825,13 @@ function initGame() {
 window.initGame = initGame;
 
 function saveState() {
-  localStorage.setItem('iconMasterV19', JSON.stringify(state));
+  localStorage.setItem('iconMasterV17_1', JSON.stringify(state));
   updateUI();
   checkBadges();
 }
 
 function loadState() {
-  const saved = localStorage.getItem('iconMasterV19');
+  const saved = localStorage.getItem('iconMasterV17_1');
   if (saved) {
     const parsed = JSON.parse(saved);
     state = {...state, ...parsed};
@@ -814,7 +864,6 @@ async function startGameFlow() {
   btn.innerHTML = '<div class="loader"></div>';
 
   try {
-    // 1. Get Provider (Farcaster Native or MetaMask)
     let provider;
     if (window.sdk && window.sdk.wallet && window.sdk.wallet.ethProvider) {
         console.log("Using Farcaster SDK Provider");
@@ -828,9 +877,8 @@ async function startGameFlow() {
 
     // 1. Ağ Değiştirme (Base Ağına Zorla)
     try {
-      await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2105" }]); // 8453 Base
+      await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2105" }]); 
     } catch (switchError) {
-      // Eğer ağ ekli değilse eklemeyi dene (Opsiyonel, genelde switch yeterli)
       console.warn("Network switch failed, continuing anyway...");
     }
 
@@ -839,30 +887,23 @@ async function startGameFlow() {
     const userAddress = accounts[0];
     const signer = await provider.getSigner();
 
-    // 3. İşlemi Hazırla (0 ETH Gönderimi - Onay Ekranı İçin)
+    // 3. İşlemi Hazırla (0 ETH Gönderimi)
     const tx = {
-        to: userAddress, // Kendine gönder
-        value: 0, // 0 ETH
+        to: userAddress, 
+        value: 0, 
+        gasLimit: 21000 
     };
     
-    console.log("Sending Transaction...");
-    
-    // İşlemi Gönder (Onay Ekranı Çıkar)
     const txResponse = await signer.sendTransaction(tx);
     console.log("TX Sent:", txResponse.hash);
     
-    // Onay gelince oyunu başlat
     launchGame();
 
   } catch (err) {
     console.error("Wallet Error:", err);
-    
-    // Hata mesajını güzelleştir
-    let msg = "Transaction failed.";
-    if (err.code === "ACTION_REJECTED") msg = "User rejected the transaction.";
-    else if (err.code === "INSUFFICIENT_FUNDS") msg = "Insufficient funds (ETH needed for gas).";
-    else if (err.message && err.message.includes("missing revert data")) msg = "Gas estimation failed. Ensure you have ETH on Base.";
-    
+    let msg = "İşlem başarısız.";
+    if (err.code === "ACTION_REJECTED") msg = "İşlemi iptal ettiniz.";
+    else if (err.code === "INSUFFICIENT_FUNDS") msg = "Yetersiz bakiye (Gas Fee için ETH gerekli).";
     alert(msg);
   } finally {
     btn.disabled = false;
@@ -885,24 +926,12 @@ function nextLevel() {
     return;
   }
 
-  // Reset Double Chance for new question
-  doubleChanceUsed = false; 
-  // Force disable joker if it was active only for one question (per your request)
-  if (activeJokers.double) {
-     activeJokers.double = false; 
-     document.getElementById('btnJokerDouble').classList.remove('active');
-     document.getElementById('btnJokerDouble').classList.add('used');
-  }
-
+  doubleChanceUsed = false;
   document.getElementById('scorePopup').classList.remove('pop');
   document.getElementById('coinImage').style.display = 'block';
   document.getElementById('coinFallback').style.display = 'none';
-  document.getElementById('gameOverIndicator').style.display = 'none'; // Hide Game Over text
 
   let pool = COIN_DB.filter(c => !usedCoinIds.has(c.id));
-  // Simple fallback if pool exhausted
-  if(pool.length === 0) { endGame("Done!"); return; }
-  
   currentCoin = pool[Math.floor(Math.random() * pool.length)];
   usedCoinIds.add(currentCoin.id);
 
@@ -912,7 +941,6 @@ function nextLevel() {
   currentOptions = [currentCoin, ...wrongs].sort(() => 0.5 - Math.random());
 
   renderGameScreen();
-  // 1st Question = 10s, Others = 7s
   const timeLimit = usedCoinIds.size === 1 ? 10000 : 7000;
   startTimer(timeLimit);
 }
@@ -938,16 +966,8 @@ function renderGameScreen() {
   const btn50 = document.getElementById('btnJoker50');
   const btnDouble = document.getElementById('btnJokerDouble');
 
-  // Update UI based on state
-  // Fifty is immediate use
   btn50.className = `joker-btn ${jokersUnlocked && !activeJokers.fifty && !isJokerUsed('fifty') ? 'active' : 'used'}`;
-  
-  // Double is active state
-  if (activeJokers.double) {
-      btnDouble.className = 'joker-btn active'; 
-  } else {
-      btnDouble.className = `joker-btn ${jokersUnlocked && !isJokerUsed('double') ? '' : 'used'}`;
-  }
+  btnDouble.className = `joker-btn ${jokersUnlocked && !activeJokers.double ? 'active' : 'used'}`;
 }
 
 let sessionJokers = { fifty: false, double: false };
@@ -1123,7 +1143,7 @@ function verifyQuest() {
   btn.disabled = true;
 
   setTimeout(() => {
-    state.jokersUnlockedUntil = Date.now() + (24 * 60 * 60 * 1000); 
+    state.jokersUnlockedUntil = Date.now() + (7 * 24 * 60 * 60 * 1000); 
     saveState();
     
     btn.innerText = "Verified! Jokers Unlocked";
@@ -1185,8 +1205,7 @@ function renderBadges() {
     if (badge.type === 'games' && state.totalGames >= badge.target) conditionMet = true;
     if (badge.type === 'highScore' && state.bestScore >= badge.target) conditionMet = true;
     if (badge.type === 'jokers' && state.jokersUsed >= badge.target) conditionMet = true;
-    // ... (other conditions)
-    
+
     const isClaimed = state.claimedBadges.includes(badge.id);
 
     const div = document.createElement('div');
