@@ -347,7 +347,7 @@
     /* --- Leaderboard --- */
     .lb-filters { 
         display:flex; gap:10px; margin-bottom: 15px; 
-        position: relative; z-index: 30; 
+        position: relative; z-index: 50; /* FIX: High z-index to prevent blocked clicks */
     }
     .lb-btn { 
       flex: 1; padding: 12px; font-size: 0.85rem; 
@@ -392,13 +392,13 @@
     .nav-item svg { width: 24px; height: 24px; fill: currentColor; }
     .nav-item.active { color: var(--primary); }
 
-    /* --- Modal (Result Card) --- */
-    .overlay { position: fixed; inset:0; background: rgba(0,0,0,0.85); z-index: 1000; }
+    /* --- Modal (Result Card) - Z-index increased --- */
+    .overlay { position: fixed; inset:0; background: rgba(0,0,0,0.85); z-index: 2000; }
     
     .result-modal {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
       background: #0f172a; border: 1px solid var(--primary);
-      padding: 30px; border-radius: 24px; z-index: 1001;
+      padding: 30px; border-radius: 24px; z-index: 2001;
       text-align: center; width: 85%; max-width: 350px;
       box-shadow: 0 0 50px rgba(99, 102, 241, 0.5);
       display: flex; flex-direction: column; align-items: center;
@@ -729,6 +729,7 @@ function handleImageError(img) {
 let state = {
   score: 0, totalPoints: 0, totalGames: 0, jokersUsed: 0, bestScore: 0,
   jokersUnlockedUntil: 0, claimedBadges: [], 
+  lastWeekWinners: ["@crypto_guru", "@nft_whale"], // Default fallback
   history: [{user: "@ayktbyr", score: 150, date: Date.now()-10000}]
 };
 let currentCoin, currentOptions, gameTimer, timerStart;
@@ -745,6 +746,10 @@ function saveState() { localStorage.setItem('iconMasterV20', JSON.stringify(stat
 function loadState() {
   const saved = localStorage.getItem('iconMasterV20');
   if (saved) state = {...state, ...JSON.parse(saved)};
+  
+  // Ensure arrays exist to prevent "undefined" errors if local storage had old format
+  if(!state.claimedBadges) state.claimedBadges = [];
+  if(!state.lastWeekWinners) state.lastWeekWinners = ["@crypto_guru", "@nft_whale"];
 }
 
 function navTo(screenName) {
@@ -789,7 +794,8 @@ async function startGameFlow() {
     isSessionActive = true; // Session verified
     launchGame();
   } catch (err) {
-    alert("Game start cancelled. Please try again.");
+    console.error("Game start error:", err);
+    alert("Game start cancelled: " + (err.message || "Unknown error"));
   } finally {
     btn.disabled = false; btn.innerText = "Start Game";
   }
@@ -945,9 +951,22 @@ function updateJokerStatus() {
 }
 function updateQuestLeaders() {
     const container = document.getElementById('quest-profiles-container');
+    if(!container) return;
     container.innerHTML = `
     <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/ayktbyr')" class="profile-chip">@ayktbyr</div>
     <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/atmacxa')" class="profile-chip">@atmacxa</div>`;
+    
+    // Add daily winner if available
+    // Check if state.lastWeekWinners is defined and iterate
+    if (state.lastWeekWinners && Array.isArray(state.lastWeekWinners)) {
+       state.lastWeekWinners.forEach(user => {
+           const chip = document.createElement('div');
+           chip.className = 'profile-chip';
+           chip.innerText = user;
+           // Optional: make clickable if real usernames
+           container.appendChild(chip);
+       });
+    }
 }
 function updateUI() {
     document.getElementById('displayBestScore').innerText = state.bestScore;
