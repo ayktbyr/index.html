@@ -5,13 +5,11 @@
   <title>Icon Master - Farcaster Crypto Quiz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   
-  <!-- Game Icon -->
   <link rel="icon" href="https://icon-master-demo.vercel.app/splash.png">
 
   <!-- FARCASTER METADATA -->
   <meta property="fc:frame" content='{"version":"next","imageUrl":"https://icon-master-demo.vercel.app/og-image.png","button":{"title":"Play Icon Master","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://icon-master-demo.vercel.app/splash.png","splashBackgroundColor":"#0f172a"}}}' />
   
-  <!-- Open Graph -->
   <meta property="og:title" content="Icon Master" />
   <meta property="og:description" content="Race against time. Guess 250+ crypto icons. Become the Daily King!" />
   <meta property="og:image" content="https://icon-master-demo.vercel.app/og-image.png" />
@@ -24,19 +22,12 @@
   <script type="module">
     import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
     window.sdk = sdk; 
-
     window.onload = async () => {
       loadState();
       updateUI();
       updateJokerStatus();
       updateQuestLeaders();
-
-      try {
-        await sdk.actions.ready();
-        console.log("Farcaster SDK Ready!");
-      } catch (err) {
-        console.error("SDK Error:", err);
-      }
+      try { await sdk.actions.ready(); } catch (e) {}
     };
   </script>
 
@@ -111,7 +102,6 @@
     }
     .personal-best span { color: var(--gold); font-weight: bold; }
 
-    /* --- Content Area --- */
     .content {
       flex: 1;
       overflow-y: auto;
@@ -129,80 +119,45 @@
       flex-direction: column;
     }
     .screen.active { display: flex; }
-
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* --- UI Components --- */
     .btn-main {
       background: linear-gradient(90deg, var(--primary), var(--accent));
-      color: white;
-      border: none;
-      width: 100%;
-      padding: 16px;
-      border-radius: 16px;
-      font-size: 1.1rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
-      transition: transform 0.1s;
-      margin-top: 20px;
-      display: flex; justify-content: center; align-items: center;
+      color: white; border: none; width: 100%; padding: 16px; border-radius: 16px;
+      font-size: 1.1rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); transition: transform 0.1s;
+      margin-top: 20px; display: flex; justify-content: center; align-items: center;
     }
     .btn-main:active { transform: scale(0.98); }
     .btn-main:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
     
     .btn-secondary {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: var(--text);
-      width: 100%;
-      padding: 12px;
-      border-radius: 16px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      color: var(--text); width: 100%; padding: 12px; border-radius: 16px;
+      font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px;
     }
 
     .hero-card {
       background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 24px;
-      padding: 30px 20px;
-      text-align: center;
-      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 30px 20px;
+      text-align: center; margin-bottom: 20px;
       box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
     }
 
     .hero-icon-wrapper {
-      width: 80px;
-      height: 80px;
+      width: 80px; height: 80px;
       background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
       margin-bottom: 5px;
     }
-    .hero-icon-svg {
-      width: 48px;
-      height: 48px;
-      filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.6));
-      animation: float 3s ease-in-out infinite;
-    }
+    .hero-icon-svg { width: 48px; height: 48px; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.6)); }
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
     .hero-stats-bar { display: flex; gap: 12px; width: 100%; justify-content: center; }
     .stat-pill {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      padding: 6px 12px;
-      border-radius: 12px;
-      font-size: 0.8rem;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      padding: 6px 12px; border-radius: 12px; font-size: 0.8rem;
       display: flex; align-items: center; gap: 6px; color: var(--text-muted);
     }
     .stat-pill b { color: var(--text); font-size: 0.9rem; }
@@ -213,26 +168,13 @@
       background: linear-gradient(to bottom right, #fff, #94a3b8);
       -webkit-background-clip: text; color: transparent;
     }
-    .hero-desc {
-      font-size: 0.9rem; color: var(--text-muted); margin: 0;
-      max-width: 260px; line-height: 1.4;
-    }
+    .hero-desc { font-size: 0.9rem; color: var(--text-muted); margin: 0; max-width: 260px; line-height: 1.4; }
 
     .game-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-    .game-stat {
-      background: var(--card-bg); padding: 6px 12px; border-radius: 12px;
-      font-size: 0.9rem; font-weight: 600;
-    }
-    .timer-bar {
-      height: 6px; background: rgba(255,255,255,0.1);
-      border-radius: 3px; margin-bottom: 20px; overflow: hidden;
-    }
-    .timer-fill {
-      height: 100%; background: var(--success); width: 100%;
-      transition: width 0.1s linear, background-color 0.3s;
-    }
-    .timer-fill.warning { background: var(--gold); }
-    .timer-fill.danger { background: var(--danger); }
+    .game-stat { background: var(--card-bg); padding: 6px 12px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; }
+    .timer-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+    .timer-fill { height: 100%; background: var(--success); width: 100%; transition: width 0.1s linear, background-color 0.3s; }
+    .timer-fill.warning { background: var(--gold); } .timer-fill.danger { background: var(--danger); }
 
     .coin-display {
       width: 120px; height: 120px; margin: 0 auto 30px;
@@ -242,38 +184,21 @@
       display: flex; align-items: center; justify-content: center; position: relative;
     }
     .coin-img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block; }
-    
     #coinFallback { 
       display: none; width: 90px; height: 90px; border-radius: 50%;
       align-items: center; justify-content: center;
       font-size: 1.5rem; font-weight: 800; color: white;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
       background: linear-gradient(135deg, #6366f1, #a855f7);
       border: 2px solid rgba(255,255,255,0.2);
     }
     
-    /* Score & Game Over Popups */
     .score-popup {
       position: absolute; top: -10px; right: -20px;
       font-size: 1.5rem; font-weight: 900; color: var(--success);
       opacity: 0; pointer-events: none; z-index: 10;
     }
     .score-popup.pop { animation: popUp 1s ease forwards; }
-
-    .game-over-text {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        font-size: 1.2rem; font-weight: 900; color: var(--danger);
-        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-        text-align: center;
-        display: none; z-index: 15;
-        background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 8px;
-    }
-
-    @keyframes popUp {
-      0% { opacity: 1; transform: translateY(0) scale(0.8); }
-      50% { transform: translateY(-20px) scale(1.2); }
-      100% { opacity: 0; transform: translateY(-40px) scale(1); }
-    }
+    @keyframes popUp { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 50% { transform: translateY(-20px) scale(1.2); } 100% { opacity: 0; transform: translateY(-40px) scale(1); } }
 
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
     .option-btn {
@@ -284,7 +209,7 @@
     }
     .option-btn.correct { background: var(--success); color: #022c22; border-color: var(--success); }
     .option-btn.wrong { background: var(--danger); border-color: var(--danger); opacity: 0.8; }
-    .option-btn:disabled { cursor: default; opacity: 0.7; }
+    .option-btn:disabled { opacity: 0.7; cursor: default; }
 
     .jokers-area { display: flex; gap: 10px; margin-top: auto; }
     .joker-btn {
@@ -296,58 +221,10 @@
     .joker-btn.active { opacity: 1; background: rgba(139, 92, 246, 0.2); }
     .joker-btn.used { opacity: 0.3; filter: grayscale(1); cursor: default; }
 
-    /* --- Quest & Badges --- */
-    .quest-card {
-      background: linear-gradient(to right, rgba(15,23,42,0.9), rgba(30,41,59,0.9));
-      border: 1px solid var(--primary); border-radius: 16px; padding: 16px; margin-bottom: 16px;
-    }
-    .quest-profiles { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
-    .profile-chip {
-      background: rgba(99, 102, 241, 0.2); padding: 6px 12px;
-      border-radius: 20px; font-size: 0.75rem; color: #a5b4fc;
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      display: flex; align-items: center; gap: 4px;
-      text-decoration: none; transition: background 0.2s; cursor: pointer;
-    }
-    .profile-chip:hover { background: rgba(99, 102, 241, 0.4); }
-    .profile-chip.winner { border-color: var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.15); }
-    
-    .badge-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;
-    }
-    .badge-item {
-      background: rgba(0,0,0,0.3); border-radius: 10px; padding: 12px 5px;
-      text-align: center; opacity: 0.5; border: 1px solid rgba(255,255,255,0.05);
-      position: relative; display: flex; flex-direction: column; align-items: center;
-      min-height: 110px;
-    }
-    .badge-item.can-claim {
-      opacity: 1; border-color: var(--primary);
-      box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); animation: pulseBorder 2s infinite;
-    }
-    .badge-item.owned {
-      opacity: 1; border-color: var(--gold);
-      background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, rgba(0,0,0,0) 70%);
-    }
-    @keyframes pulseBorder { 0% { border-color: var(--primary); } 50% { border-color: white; } 100% { border-color: var(--primary); } }
-    .badge-icon { font-size: 1.8rem; margin-bottom: 6px; display: block; }
-    .badge-name { font-size: 0.65rem; font-weight: bold; }
-    .badge-desc { font-size: 0.55rem; color: var(--text-muted); margin-top: 2px; }
-    .claim-btn {
-      margin-top: auto; background: var(--success); color: black; border: none;
-      border-radius: 12px; padding: 6px 12px; font-size: 0.7rem; font-weight: bold;
-      cursor: pointer; animation: bounce 1s infinite;
-    }
-    @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-    .claimed-tag {
-      margin-top: auto; font-size: 0.6rem; color: var(--gold); border: 1px solid var(--gold);
-      padding: 2px 6px; border-radius: 8px;
-    }
-
-    /* --- Leaderboard --- */
+    /* --- Leaderboard Filters --- */
     .lb-filters { 
         display:flex; gap:10px; margin-bottom: 15px; 
-        position: relative; z-index: 50; /* FIX: High z-index to prevent blocked clicks */
+        position: relative; z-index: 30; /* Tıklama sorunu için Z-index */
     }
     .lb-btn { 
       flex: 1; padding: 12px; font-size: 0.85rem; 
@@ -355,9 +232,7 @@
       color: var(--text-muted); border-radius: 8px; cursor: pointer;
       transition: all 0.2s ease;
     }
-    .lb-btn:active { transform: scale(0.95); }
     .lb-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: bold; }
-    
     .list-item {
       background: var(--card-bg); border-radius: 12px; padding: 12px;
       margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
@@ -367,32 +242,47 @@
     .list-user { flex: 1; padding: 0 10px; font-size: 0.9rem; }
     .list-score { font-weight: bold; color: var(--primary); }
 
-    /* --- Fixed Navbar (Bottom) --- */
+    /* --- Quest & Badges --- */
+    .quest-card { background: linear-gradient(to right, rgba(15,23,42,0.9), rgba(30,41,59,0.9)); border: 1px solid var(--primary); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+    .quest-profiles { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+    .profile-chip {
+      background: rgba(99, 102, 241, 0.2); padding: 6px 12px;
+      border-radius: 20px; font-size: 0.75rem; color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      display: flex; align-items: center; gap: 4px;
+      text-decoration: none; transition: background 0.2s; cursor: pointer;
+    }
+    .profile-chip.winner { border-color: var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.15); }
+    
+    .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+    .badge-item {
+      background: rgba(0,0,0,0.3); border-radius: 10px; padding: 12px 5px;
+      text-align: center; opacity: 0.5; border: 1px solid rgba(255,255,255,0.05);
+      position: relative; display: flex; flex-direction: column; align-items: center;
+      min-height: 110px;
+    }
+    .badge-item.can-claim { opacity: 1; border-color: var(--primary); box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); animation: pulseBorder 2s infinite; }
+    .badge-item.owned { opacity: 1; border-color: var(--gold); background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, rgba(0,0,0,0) 70%); }
+    .badge-icon { font-size: 1.8rem; margin-bottom: 6px; display: block; }
+    .badge-name { font-size: 0.65rem; font-weight: bold; }
+    .badge-desc { font-size: 0.55rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* --- Fixed Navbar --- */
     .nav-bar {
-      display: flex; 
-      background: rgba(2, 6, 23, 0.98);
-      backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(255,255,255,0.1); 
-      justify-content: space-around; 
-      z-index: 999; 
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      padding-bottom: env(safe-area-inset-bottom, 20px); 
-      height: auto;
-      min-height: var(--nav-height);
+      display: flex; background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255,255,255,0.1); justify-content: space-around; 
+      z-index: 999; position: fixed; bottom: 0; left: 0; width: 100%;
+      padding-bottom: env(safe-area-inset-bottom, 20px); height: auto; min-height: var(--nav-height);
       box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
     }
     .nav-item {
       background: none; border: none; color: var(--text-muted); font-size: 0.75rem;
-      display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer;
-      padding: 10px;
+      display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 10px;
     }
     .nav-item svg { width: 24px; height: 24px; fill: currentColor; }
     .nav-item.active { color: var(--primary); }
 
-    /* --- Modal (Result Card) - Z-index increased --- */
+    /* --- Modal --- */
     .overlay { position: fixed; inset:0; background: rgba(0,0,0,0.85); z-index: 2000; }
     
     .result-modal {
@@ -412,17 +302,8 @@
     .res-best { margin-top: 5px; font-size: 0.9rem; color: var(--gold); background: rgba(251, 191, 36, 0.1); padding: 4px 12px; border-radius: 12px; }
     
     .hidden { display: none !important; }
-    
-    /* Spinner */
-    .loader {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid var(--primary);
-        border-radius: 50%;
-        width: 24px; height: 24px;
-        animation: spin 1s linear infinite;
-    }
+    .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
   </style>
 </head>
 <body>
@@ -430,14 +311,12 @@
 <div class="app-container">
   <header class="header">
     <div class="brand">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
-      Icon Master
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg> Icon Master
     </div>
     <div class="personal-best">Best: <span id="displayBestScore">0</span></div>
   </header>
 
   <div class="content">
-    
     <!-- HOME -->
     <div id="screen-home" class="screen active">
       <div class="hero-card">
@@ -472,7 +351,6 @@
         <img id="coinImage" class="coin-img" src="" alt="Crypto Icon" onerror="handleImageError(this)">
         <div id="coinFallback">BTC</div>
         <div class="score-popup" id="scorePopup">+10</div>
-        <div class="game-over-text" id="gameOverIndicator">GAME OVER</div>
       </div>
       <div class="options-grid" id="optionsGrid"></div>
       <div class="jokers-area">
@@ -484,7 +362,6 @@
     <!-- QUESTS -->
     <div id="screen-quests" class="screen">
       <h2 style="margin-top: 0;">Joker Activation</h2>
-      <p style="font-size: 0.85rem; color: var(--text-muted);">Follow to unlock jokers (7 days):</p>
       <div class="quest-card">
         <div style="font-weight: bold; margin-bottom: 8px; font-size: 0.9rem;">Required Follows</div>
         <div class="quest-profiles" id="quest-profiles-container"></div>
@@ -505,7 +382,7 @@
       <div style="background: rgba(99, 102, 241, 0.1); padding: 10px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 15px; border: 1px solid rgba(99, 102, 241, 0.3);">
         🏆 The #1 Daily player (UTC+3) is featured in the Quest list for 24h!
       </div>
-      <div style="text-align: center; font-size: 0.7rem; color: #64748b; margin-bottom: 10px;">* Global ranking requires database. Current list is simulation + your score.</div>
+      <div style="text-align: center; font-size: 0.7rem; color: #64748b; margin-bottom: 10px;">* Global ranking requires database. Current list is simulation.</div>
       <div id="lb-list"></div>
     </div>
   </div>
@@ -516,21 +393,18 @@
     <button class="nav-item" onclick="navTo('quests')"><svg viewBox="0 0 24 24"><path d="M12 2L1 21h22M12 6l7.53 13H4.47"/></svg>Quests</button>
     <button class="nav-item" onclick="navTo('leaderboard')"><svg viewBox="0 0 24 24"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg>Rank</button>
   </nav>
-
 </div>
 
-<!-- RESULT MODAL (New Aesthetic Design) -->
+<!-- RESULT MODAL -->
 <div class="overlay hidden" id="modalOverlay"></div>
 <div class="result-modal hidden" id="modalBox">
   <div class="res-title">GAME OVER</div>
   <div class="res-label">FINAL SCORE</div>
   <div class="res-score" id="resScoreVal">0</div>
   <div class="res-best">🏆 Personal Best: <span id="resBestVal">0</span></div>
-  
   <button class="btn-main" style="margin-top: 25px; width: 100%;" onclick="restartGame()">🔄 Play Again</button>
   <button class="btn-secondary" onclick="closeModal()">Home</button>
 </div>
-
 
 <script>
 // --- CONFIG ---
@@ -794,8 +668,7 @@ async function startGameFlow() {
     isSessionActive = true; // Session verified
     launchGame();
   } catch (err) {
-    console.error("Game start error:", err);
-    alert("Game start cancelled: " + (err.message || "Unknown error"));
+    alert("Game start cancelled. Please try again.");
   } finally {
     btn.disabled = false; btn.innerText = "Start Game";
   }
