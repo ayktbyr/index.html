@@ -169,6 +169,7 @@
 
     .coin-display { width: 130px; height: 130px; margin: 0 auto 35px; background: rgba(15,23,42,0.8); border-radius: 50%; padding: 18px; border: 3px solid rgba(255,255,255,0.08); box-shadow: 0 0 60px rgba(139, 92, 246, 0.15); display: flex; align-items: center; justify-content: center; position: relative; }
     .coin-img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block; }
+    
     /* Removed inline onerror, added JS listener */
     #coinFallback { display: none; width: 100%; height: 100%; border-radius: 50%; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; color: white; background: linear-gradient(135deg, var(--primary), var(--accent)); }
     
@@ -337,6 +338,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
 
 // --- CONFIG ---
@@ -388,9 +390,11 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const analytics = getAnalytics(app);
 
 // --- GAME LOGIC ---
-function handleImageError(img) {
+// FIX: attach to window to be available globally
+window.handleImageError = function(img) {
   if (!img || !currentCoin) return;
   if (img.src.includes('assets.coincap.io')) {
     img.style.display = 'none';
@@ -399,9 +403,7 @@ function handleImageError(img) {
     return;
   }
   img.src = `https://assets.coincap.io/assets/icons/${currentCoin.symbol.toLowerCase()}@2x.png`;
-}
-// Explicitly attach handleImageError to the image element in renderGameScreen instead of window.
-// Removed: window.handleImageError = handleImageError;
+};
 
 function saveState() { localStorage.setItem('iconMasterV24', JSON.stringify(state)); updateUI(); checkBadges(); }
 function loadState() {
@@ -509,7 +511,7 @@ function nextLevel() {
 function renderGameScreen() {
   const img = document.getElementById('coinImage');
   // Attaching error handler programmatically to avoid scope issues
-  img.onerror = function() { handleImageError(this); };
+  img.onerror = function() { window.handleImageError(this); };
   img.src = currentCoin.img;
 
   document.getElementById('gameScore').innerText = state.score;
@@ -789,5 +791,3 @@ function renderBadges() {
 // Initialization
 loadState();
 </script>
-</body>
-</html>
