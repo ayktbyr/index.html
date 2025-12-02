@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8" />
   <title>Icon Master - Farcaster Crypto Quiz</title>
@@ -8,37 +8,24 @@
   <link rel="icon" href="https://icon-master-demo.vercel.app/splash.png">
 
   <!-- FARCASTER METADATA -->
-  <meta property="fc:frame" content='{"version":"next","imageUrl":"https://icon-master-demo.vercel.app/og-image.png","button":{"title":"Play Icon Master","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://icon-master-demo.vercel.app/splash.png","splashBackgroundColor":"#0f172a"}}}' />
+  <meta property="fc:frame" content='{"version":"next","imageUrl":"https://icon-master-demo.vercel.app/og-image.png","button":{"title":"Icon Master Oyna","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://icon-master-demo.vercel.app/splash.png","splashBackgroundColor":"#0f172a"}}}' />
   
   <meta property="og:title" content="Icon Master" />
-  <meta property="og:description" content="Race against time. Guess 250+ crypto icons. Become the Daily King!" />
+  <meta property="og:description" content="Zamana karşı yarış. 250+ kripto ikonunu tahmin et. Günün Kralı ol!" />
   <meta property="og:image" content="https://icon-master-demo.vercel.app/og-image.png" />
 
   <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
-  <!-- Farcaster SDK -->
-  <script type="module">
-    import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
-    window.sdk = sdk; 
-    window.onload = async () => {
-      loadState();
-      updateUI();
-      updateJokerStatus();
-      updateQuestLeaders();
-      try { await sdk.actions.ready(); } catch (e) {}
-    };
-  </script>
-
   <style>
     :root {
       --bg-color: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.95); /* Slightly more opaque */
-      --primary: #8b5cf6; /* Vivid Violet */
-      --accent: #6366f1; /* Indigo */
-      --success: #10b981; /* Emerald */
-      --danger: #ef4444; /* Red */
+      --card-bg: rgba(30, 41, 59, 0.95);
+      --primary: #8b5cf6;
+      --accent: #6366f1;
+      --success: #10b981;
+      --danger: #ef4444;
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --gold: #fbbf24;
@@ -49,7 +36,7 @@
     
     body {
       margin: 0;
-      background: radial-gradient(circle at center top, #1e1b4b 0%, #020617 100%); /* Deeper purple/black bg */
+      background: radial-gradient(circle at center top, #1e1b4b 0%, #020617 100%);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       height: 100vh;
@@ -109,7 +96,7 @@
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       padding: 20px;
-      padding-bottom: calc(var(--nav-height) + 30px); 
+      padding-bottom: calc(var(--nav-height) + 40px); 
       position: relative;
       z-index: 10;
     }
@@ -121,10 +108,8 @@
       flex-direction: column;
     }
     .screen.active { display: flex; }
-
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* --- UI Components --- */
     .btn-main {
       background: linear-gradient(135deg, var(--primary), var(--accent));
       color: white; border: none; width: 100%; padding: 16px; border-radius: 18px;
@@ -146,11 +131,8 @@
 
     .hero-card {
       background: linear-gradient(160deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 28px;
-      padding: 40px 24px;
-      text-align: center;
-      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 28px; padding: 40px 24px;
+      text-align: center; margin-bottom: 20px;
       box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
       display: flex; flex-direction: column; align-items: center; gap: 20px;
     }
@@ -170,55 +152,27 @@
       padding: 8px 16px; border-radius: 14px; font-size: 0.85rem;
       display: flex; align-items: center; gap: 6px; color: var(--text-muted);
     }
-    .stat-pill b { color: var(--text); font-size: 1rem; }
-    .stat-pill.highlight b { color: var(--primary); }
+    .stat-pill b { color: var(--text); font-size: 1rem; } .stat-pill.highlight b { color: var(--primary); }
 
     .hero-title {
       margin: 0; font-size: 2rem; font-weight: 900;
       background: linear-gradient(to bottom right, #fff, #a5b4fc);
-      -webkit-background-clip: text; color: transparent;
-      letter-spacing: -0.5px;
+      -webkit-background-clip: text; color: transparent; letter-spacing: -0.5px;
     }
     .hero-desc { font-size: 0.95rem; color: var(--text-muted); margin: 0; max-width: 280px; line-height: 1.5; }
 
-    /* Game Screen */
     .game-header { display: flex; justify-content: space-between; margin-bottom: 24px; }
-    .game-stat {
-      background: var(--card-bg); padding: 8px 16px; border-radius: 14px;
-      font-size: 0.95rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.05);
-    }
-    .timer-bar {
-      height: 8px; background: rgba(255,255,255,0.1);
-      border-radius: 4px; margin-bottom: 30px; overflow: hidden;
-    }
-    .timer-fill {
-      height: 100%; background: var(--success); width: 100%;
-      transition: width 0.1s linear, background-color 0.3s;
-      border-radius: 4px;
-    }
+    .game-stat { background: var(--card-bg); padding: 8px 16px; border-radius: 14px; font-size: 0.95rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.05); }
+    .timer-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 30px; overflow: hidden; }
+    .timer-fill { height: 100%; background: var(--success); width: 100%; transition: width 0.1s linear, background-color 0.3s; border-radius: 4px; }
     .timer-fill.warning { background: var(--gold); } .timer-fill.danger { background: var(--danger); }
 
-    .coin-display {
-      width: 130px; height: 130px; margin: 0 auto 35px;
-      background: rgba(15,23,42,0.8); border-radius: 50%; padding: 18px;
-      border: 3px solid rgba(255,255,255,0.08);
-      box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
-      display: flex; align-items: center; justify-content: center; position: relative;
-    }
+    .coin-display { width: 130px; height: 130px; margin: 0 auto 35px; background: rgba(15,23,42,0.8); border-radius: 50%; padding: 18px; border: 3px solid rgba(255,255,255,0.08); box-shadow: 0 0 60px rgba(139, 92, 246, 0.15); display: flex; align-items: center; justify-content: center; position: relative; }
     .coin-img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block; }
-    #coinFallback { 
-      display: none; width: 100%; height: 100%; border-radius: 50%;
-      align-items: center; justify-content: center;
-      font-size: 1.8rem; font-weight: 800; color: white;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-    }
+    /* Removed inline onerror, added JS listener */
+    #coinFallback { display: none; width: 100%; height: 100%; border-radius: 50%; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; color: white; background: linear-gradient(135deg, var(--primary), var(--accent)); }
     
-    .score-popup {
-      position: absolute; top: -20px; right: -20px;
-      font-size: 1.8rem; font-weight: 900; color: var(--success);
-      opacity: 0; pointer-events: none; z-index: 10;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-    }
+    .score-popup { position: absolute; top: -20px; right: -20px; font-size: 1.8rem; font-weight: 900; color: var(--success); opacity: 0; pointer-events: none; z-index: 10; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
     .score-popup.pop { animation: popUp 0.8s ease forwards; }
     
     .game-over-text {
@@ -232,112 +186,48 @@
     @keyframes popUp { 0% { opacity: 0; transform: translateY(10px) scale(0.8); } 20% { opacity: 1; transform: translateY(0) scale(1.1); } 100% { opacity: 0; transform: translateY(-30px) scale(1); } }
 
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
-    .option-btn {
-      background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1);
-      color: white; padding: 18px 10px; border-radius: 16px;
-      font-size: 0.95rem; font-weight: 600; cursor: pointer;
-      transition: all 0.15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    .option-btn { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 18px 10px; border-radius: 16px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .option-btn:active { transform: scale(0.98); }
     .option-btn.correct { background: var(--success); color: #fff; border-color: var(--success); box-shadow: 0 0 20px rgba(34, 197, 94, 0.4); }
-    .option-btn.wrong { background: var(--danger); border-color: var(--danger); opacity: 0.8; }
-    .option-btn:disabled { opacity: 0.6; cursor: default; }
+    .option-btn.wrong { background: var(--danger); border-color: var(--danger); opacity: 0.8; } .option-btn:disabled { opacity: 0.6; cursor: default; }
 
     .jokers-area { display: flex; gap: 12px; margin-top: auto; }
-    .joker-btn {
-      flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1);
-      color: var(--text); padding: 14px; border-radius: 16px;
-      font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center;
-      gap: 8px; cursor: pointer; transition: background 0.2s;
-    }
+    .joker-btn { flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1); color: var(--text); padding: 14px; border-radius: 16px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: background 0.2s; }
     .joker-btn span { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 6px; font-size: 0.75rem; }
-    .joker-btn.active { background: rgba(139, 92, 246, 0.15); border-color: var(--primary); color: var(--primary); }
-    .joker-btn.used { opacity: 0.4; filter: grayscale(1); cursor: default; }
+    .joker-btn.active { background: rgba(139, 92, 246, 0.15); border-color: var(--primary); color: var(--primary); } .joker-btn.used { opacity: 0.4; filter: grayscale(1); cursor: default; }
 
     /* --- Quest & Badges --- */
-    .quest-card {
-      background: linear-gradient(135deg, rgba(30,41,59,0.6), rgba(15,23,42,0.8));
-      border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 20px; padding: 20px; margin-bottom: 24px;
-    }
+    .quest-card { background: linear-gradient(135deg, rgba(30,41,59,0.6), rgba(15,23,42,0.8)); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 20px; padding: 20px; margin-bottom: 24px; }
     .quest-profiles { display: flex; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
-    .profile-chip {
-      background: rgba(139, 92, 246, 0.1); padding: 8px 14px;
-      border-radius: 20px; font-size: 0.8rem; color: #a5b4fc; font-weight: 600;
-      border: 1px solid rgba(139, 92, 246, 0.2);
-      display: flex; align-items: center; gap: 6px;
-      text-decoration: none; transition: background 0.2s; cursor: pointer;
-    }
-    .profile-chip:hover { background: rgba(139, 92, 246, 0.2); }
-    .profile-chip.winner { border-color: var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.1); }
+    .profile-chip { background: rgba(139, 92, 246, 0.1); padding: 8px 14px; border-radius: 20px; font-size: 0.8rem; color: #a5b4fc; font-weight: 600; border: 1px solid rgba(139, 92, 246, 0.2); display: flex; align-items: center; gap: 6px; text-decoration: none; transition: background 0.2s; cursor: pointer; }
+    .profile-chip:hover { background: rgba(139, 92, 246, 0.2); } .profile-chip.winner { border-color: var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.1); }
     
     .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
-    .badge-item {
-      background: rgba(255,255,255,0.03); border-radius: 16px; padding: 16px 8px;
-      text-align: center; opacity: 0.4; border: 1px solid rgba(255,255,255,0.05);
-      position: relative; display: flex; flex-direction: column; align-items: center;
-      min-height: 120px; transition: opacity 0.2s;
-    }
+    .badge-item { background: rgba(255,255,255,0.03); border-radius: 16px; padding: 16px 8px; text-align: center; opacity: 0.4; border: 1px solid rgba(255,255,255,0.05); position: relative; display: flex; flex-direction: column; align-items: center; min-height: 120px; transition: opacity 0.2s; }
     .badge-item.can-claim { opacity: 1; border-color: var(--primary); box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
     .badge-item.owned { opacity: 1; border-color: var(--gold); background: radial-gradient(circle, rgba(251, 191, 36, 0.05) 0%, transparent 70%); }
-    .badge-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
-    .badge-name { font-size: 0.7rem; font-weight: 700; line-height: 1.2; }
-    .badge-desc { font-size: 0.6rem; color: var(--text-muted); margin-top: 4px; }
+    .badge-icon { font-size: 2rem; margin-bottom: 8px; display: block; } .badge-name { font-size: 0.7rem; font-weight: 700; line-height: 1.2; } .badge-desc { font-size: 0.6rem; color: var(--text-muted); margin-top: 4px; }
 
-    /* --- Leaderboard --- */
-    .lb-filters { 
-        display:flex; gap:12px; margin-bottom: 20px; 
-        position: relative; z-index: 30; 
-    }
-    .lb-btn { 
-      flex: 1; padding: 14px; font-size: 0.9rem; font-weight: 600;
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-      color: var(--text-muted); border-radius: 14px; cursor: pointer;
-      transition: all 0.2s ease;
-    }
+    /* --- Leaderboard Filters --- */
+    .lb-filters { display:flex; gap:12px; margin-bottom: 20px; position: relative; z-index: 30; }
+    .lb-btn { flex: 1; padding: 14px; font-size: 0.9rem; font-weight: 600; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 14px; cursor: pointer; transition: all 0.2s ease; }
     .lb-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
-    .list-item {
-      background: rgba(30, 41, 59, 0.6); border-radius: 16px; padding: 16px;
-      margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-    .list-rank { width: 28px; font-weight: 800; color: var(--gold); font-size: 1rem; }
-    .list-user { flex: 1; padding: 0 12px; font-size: 0.95rem; font-weight: 500; }
-    .list-score { font-weight: 800; color: var(--accent); }
+    .list-item { background: rgba(30, 41, 59, 0.6); border-radius: 16px; padding: 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
+    .list-rank { width: 28px; font-weight: 800; color: var(--gold); font-size: 1rem; } .list-user { flex: 1; padding: 0 12px; font-size: 0.95rem; font-weight: 500; } .list-score { font-weight: 800; color: var(--accent); }
 
     /* --- Fixed Navbar --- */
-    .nav-bar {
-      display: flex; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(255,255,255,0.08); justify-content: space-around; 
-      z-index: 999; position: fixed; bottom: 0; left: 0; width: 100%;
-      padding-bottom: env(safe-area-inset-bottom, 20px); height: auto; min-height: var(--nav-height);
-    }
-    .nav-item {
-      background: none; border: none; color: #64748b; font-size: 0.7rem; font-weight: 600;
-      display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer;
-      padding: 12px 20px; transition: color 0.2s;
-    }
-    .nav-item svg { width: 26px; height: 26px; fill: currentColor; transition: transform 0.2s; }
-    .nav-item.active { color: var(--primary); }
-    .nav-item.active svg { transform: translateY(-2px); }
+    .nav-bar { display: flex; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.08); justify-content: space-around; z-index: 999; position: fixed; bottom: 0; left: 0; width: 100%; padding-bottom: env(safe-area-inset-bottom, 20px); height: auto; min-height: var(--nav-height); box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+    .nav-item { background: none; border: none; color: #64748b; font-size: 0.7rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; padding: 12px 20px; transition: color 0.2s; }
+    .nav-item svg { width: 26px; height: 26px; fill: currentColor; transition: transform 0.2s; } .nav-item.active { color: var(--primary); } .nav-item.active svg { transform: translateY(-2px); }
 
     /* --- Result Modal --- */
     .overlay { position: fixed; inset:0; background: rgba(0,0,0,0.9); z-index: 2000; backdrop-filter: blur(5px); }
-    .result-modal {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: linear-gradient(145deg, #1e1b4b, #0f172a); 
-      border: 1px solid var(--primary);
-      padding: 32px; border-radius: 32px; z-index: 2001;
-      text-align: center; width: 85%; max-width: 350px;
-      box-shadow: 0 0 80px rgba(139, 92, 246, 0.4);
-      display: flex; flex-direction: column; align-items: center;
-      animation: scaleUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
+    .result-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(145deg, #1e1b4b, #0f172a); border: 1px solid var(--primary); padding: 32px; border-radius: 32px; z-index: 2001; text-align: center; width: 85%; max-width: 350px; box-shadow: 0 0 80px rgba(139, 92, 246, 0.4); display: flex; flex-direction: column; align-items: center; animation: scaleUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     @keyframes scaleUp { from { transform: translate(-50%, -40%) scale(0.8); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
     .res-title { font-size: 2rem; font-weight: 900; color: var(--danger); margin-bottom: 8px; letter-spacing: -1px; text-transform: uppercase; }
     .res-label { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
     .res-score { font-size: 4rem; font-weight: 900; color: white; margin: 4px 0; text-shadow: 0 0 30px rgba(139, 92, 246, 0.6); line-height: 1; }
     .res-best { margin-top: 12px; font-size: 0.95rem; color: var(--gold); background: rgba(251, 191, 36, 0.15); padding: 6px 16px; border-radius: 20px; font-weight: 700; }
-    
     .hidden { display: none !important; }
     .loader { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -348,8 +238,7 @@
 <div class="app-container">
   <header class="header">
     <div class="brand">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
-      Icon Master
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg> Icon Master
     </div>
     <div class="personal-best">Best: <span id="displayBestScore">0</span></div>
   </header>
@@ -374,7 +263,7 @@
         <p style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
           On-chain verification required to start
         </p>
-        <button class="btn-main" id="btnStartGame" onclick="startGameFlow()">Start Game</button>
+        <button class="btn-main" id="btnStartGame" onclick="window.startGameFlow()">Start Game</button>
       </div>
     </div>
 
@@ -386,15 +275,15 @@
       </div>
       <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
       <div class="coin-display">
-        <img id="coinImage" class="coin-img" src="" alt="Crypto Icon" onerror="handleImageError(this)">
+        <img id="coinImage" class="coin-img" src="" alt="Crypto Icon">
         <div id="coinFallback">BTC</div>
         <div class="score-popup" id="scorePopup">+10</div>
         <div class="game-over-text" id="gameOverIndicator">GAME OVER</div>
       </div>
       <div class="options-grid" id="optionsGrid"></div>
       <div class="jokers-area">
-        <button class="joker-btn" id="btnJoker50" onclick="useJoker('5050')"><span>½</span> 50/50</button>
-        <button class="joker-btn" id="btnJokerDouble" onclick="useJoker('double')"><span>↺</span> Double Guess</button>
+        <button class="joker-btn" id="btnJoker50" onclick="window.useJoker('5050')"><span>½</span> 50/50</button>
+        <button class="joker-btn" id="btnJokerDouble" onclick="window.useJoker('double')"><span>↺</span> Double Guess</button>
       </div>
     </div>
 
@@ -402,13 +291,11 @@
     <div id="screen-quests" class="screen">
       <h2 style="margin-top: 0;">Joker Activation</h2>
       <div class="quest-card">
-        <div style="font-weight: bold; margin-bottom: 12px; font-size: 0.95rem;">Required Follows</div>
+        <div style="font-weight: bold; margin-bottom: 8px; font-size: 0.9rem;">Required Follows</div>
         <div class="quest-profiles" id="quest-profiles-container"></div>
-        <div style="font-size: 0.75rem; margin: 12px 0; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-          Includes <b>Daily Winner</b>
-        </div>
-        <button class="btn-main" id="btnVerifyQuest" style="font-size: 0.9rem; padding: 12px;" onclick="verifyQuest()">Verify Follows & Unlock</button>
-        <div id="questTimer" style="text-align: center; font-size: 0.9rem; color: var(--success); margin-top: 5px; display: none; font-weight: bold;">✅ Active!</div>
+        <div style="font-size: 0.75rem; margin: 10px 0; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px;">Includes <b>Daily Winner</b> (UTC+3)</div>
+        <button class="btn-main" id="btnVerifyQuest" style="font-size: 0.9rem; padding: 10px;" onclick="window.verifyQuest()">Verify Follows & Unlock</button>
+        <div id="questTimer" style="text-align: center; font-size: 0.8rem; color: var(--success); margin-top: 5px; display: none; font-weight: bold;">✅ Active!</div>
       </div>
       <h3>Achievements</h3>
       <div class="badge-grid" id="badgesContainer"></div>
@@ -417,8 +304,8 @@
     <!-- LEADERBOARD -->
     <div id="screen-leaderboard" class="screen">
       <div class="lb-filters">
-        <button id="lbBtnDaily" class="lb-btn active" onclick="renderLeaderboard('daily')">Daily</button>
-        <button id="lbBtnAll" class="lb-btn" onclick="renderLeaderboard('alltime')">All Time</button>
+        <button id="lbBtnDaily" class="lb-btn active" onclick="window.renderLeaderboard('daily')">Daily</button>
+        <button id="lbBtnAll" class="lb-btn" onclick="window.renderLeaderboard('alltime')">All Time</button>
       </div>
       <div style="background: rgba(99, 102, 241, 0.1); padding: 14px; border-radius: 16px; font-size: 0.85rem; margin-bottom: 20px; border: 1px solid rgba(99, 102, 241, 0.3); line-height: 1.4;">
         🏆 The <b>#1 Daily player</b> (UTC+3) is featured in the Quest list for 24h!
@@ -429,9 +316,9 @@
 
   <!-- NAV BAR -->
   <nav class="nav-bar">
-    <button class="nav-item active" onclick="navTo('home')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Play</button>
-    <button class="nav-item" onclick="navTo('quests')"><svg viewBox="0 0 24 24"><path d="M12 2L1 21h22M12 6l7.53 13H4.47"/></svg>Quests</button>
-    <button class="nav-item" onclick="navTo('leaderboard')"><svg viewBox="0 0 24 24"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg>Rank</button>
+    <button class="nav-item active" onclick="window.navTo('home')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Play</button>
+    <button class="nav-item" onclick="window.navTo('quests')"><svg viewBox="0 0 24 24"><path d="M12 2L1 21h22M12 6l7.53 13H4.47"/></svg>Quests</button>
+    <button class="nav-item" onclick="window.navTo('leaderboard')"><svg viewBox="0 0 24 24"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg>Rank</button>
   </nav>
 </div>
 
@@ -442,11 +329,17 @@
   <div class="res-label">FINAL SCORE</div>
   <div class="res-score" id="resScoreVal">0</div>
   <div class="res-best">🏆 Personal Best: <span id="resBestVal">0</span></div>
-  <button class="btn-main" style="margin-top: 30px; width: 100%;" onclick="restartGame()">🔄 Play Again</button>
-  <button class="btn-secondary" onclick="closeModal()">Main Menu</button>
+  <button class="btn-main" style="margin-top: 30px; width: 100%;" onclick="window.restartGame()">🔄 Play Again</button>
+  <button class="btn-secondary" onclick="window.closeModal()">Main Menu</button>
 </div>
 
-<script>
+<!-- MAIN LOGIC -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
+
+// --- CONFIG ---
 const CONTRACT_ADDRESS = "0x5827273795C64E328D8F27B5e8DDB2E4187b1dA6"; 
 const CONFIG = { totalTime: 7000, baseChainId: '8453' };
 const MINIMAL_ABI = ["function mint(uint256 id, uint256 amount) public"];
@@ -464,98 +357,39 @@ const BADGE_DEFS = [
   { id: 'joker_10', type: 'jokers', target: 10, icon: '🃏', title: 'Trickster', desc: 'Use 10 jokers' }
 ];
 
-const COIN_DB = [
-  {id: "bitcoin", symbol: "btc", name: "Bitcoin", img: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png"},
-  {id: "ethereum", symbol: "eth", name: "Ethereum", img: "https://assets.coingecko.com/coins/images/279/large/ethereum.png"},
-  {id: "binancecoin", symbol: "bnb", name: "BNB", img: "https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png"},
-  {id: "solana", symbol: "sol", name: "Solana", img: "https://assets.coingecko.com/coins/images/4128/large/solana.png"},
-  {id: "ripple", symbol: "xrp", name: "XRP", img: "https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png"},
-  {id: "dogecoin", symbol: "doge", name: "Dogecoin", img: "https://assets.coingecko.com/coins/images/5/large/dogecoin.png"},
-  {id: "cardano", symbol: "ada", name: "Cardano", img: "https://assets.coingecko.com/coins/images/975/large/cardano.png"},
-  {id: "avalanche-2", symbol: "avax", name: "Avalanche", img: "https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png"},
-  {id: "tron", symbol: "trx", name: "TRON", img: "https://assets.coingecko.com/coins/images/1094/large/tron-logo.png"},
-  {id: "polkadot", symbol: "dot", name: "Polkadot", img: "https://assets.coingecko.com/coins/images/12171/large/polkadot.png"},
-  {id: "chainlink", symbol: "link", name: "Chainlink", img: "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png"},
-  {id: "matic-network", symbol: "matic", name: "Polygon", img: "https://assets.coingecko.com/coins/images/4713/large/matic-token-icon.png"},
-  {id: "shiba-inu", symbol: "shib", name: "Shiba Inu", img: "https://assets.coingecko.com/coins/images/11939/large/shiba.png"},
-  {id: "litecoin", symbol: "ltc", name: "Litecoin", img: "https://assets.coingecko.com/coins/images/2/large/litecoin.png"},
-  {id: "uniswap", symbol: "uni", name: "Uniswap", img: "https://assets.coingecko.com/coins/images/12504/large/uniswap-uni.png"},
-  {id: "stellar", symbol: "xlm", name: "Stellar", img: "https://assets.coingecko.com/coins/images/100/large/Stellar_symbol_black_RGB.png"},
-  {id: "monero", symbol: "xmr", name: "Monero", img: "https://assets.coingecko.com/coins/images/69/large/monero_logo.png"},
-  {id: "cosmos", symbol: "atom", name: "Cosmos Hub", img: "https://assets.coingecko.com/coins/images/1481/large/cosmos_hub.png"},
-  {id: "okb", symbol: "okb", name: "OKB", img: "https://assets.coingecko.com/coins/images/4463/large/WeChat_Image_20220118095618.png"},
-  {id: "aptos", symbol: "apt", name: "Aptos", img: "https://assets.coingecko.com/coins/images/26455/large/aptos_round.png"},
-  {id: "near", symbol: "near", name: "NEAR Protocol", img: "https://assets.coingecko.com/coins/images/10365/large/near.png"},
-  {id: "filecoin", symbol: "fil", name: "Filecoin", img: "https://assets.coingecko.com/coins/images/12817/large/filecoin.png"},
-  {id: "arbitrum", symbol: "arb", name: "Arbitrum", img: "https://assets.coingecko.com/coins/images/16547/large/photo_2023-03-29_21.47.00.jpeg"},
-  {id: "pepe", symbol: "pepe", name: "Pepe", img: "https://assets.coingecko.com/coins/images/29850/large/pepe-token.jpeg"},
-  {id: "maker", symbol: "mkr", name: "Maker", img: "https://assets.coingecko.com/coins/images/1364/large/Mark_Maker.png"},
-  {id: "optimism", symbol: "op", name: "Optimism", img: "https://assets.coingecko.com/coins/images/25244/large/Optimism.png"},
-  {id: "aave", symbol: "aave", name: "Aave", img: "https://assets.coingecko.com/coins/images/12645/large/AAVE.png"},
-  {id: "graph", symbol: "grt", name: "The Graph", img: "https://assets.coingecko.com/coins/images/13397/large/Graph_Token.png"},
-  {id: "algorand", symbol: "algo", name: "Algorand", img: "https://assets.coingecko.com/coins/images/4380/large/download.png"},
-  {id: "render-token", symbol: "rndr", name: "Render", img: "https://assets.coingecko.com/coins/images/11636/large/rndr.png"},
-  {id: "injective-protocol", symbol: "inj", name: "Injective", img: "https://assets.coingecko.com/coins/images/12882/large/Secondary_Symbol.png"},
-  {id: "immutable-x", symbol: "imx", name: "Immutable", img: "https://assets.coingecko.com/coins/images/17233/large/imx.png"},
-  {id: "fantom", symbol: "ftm", name: "Fantom", img: "https://assets.coingecko.com/coins/images/4001/large/Fantom_round.png"},
-  {id: "vechain", symbol: "vet", name: "VeChain", img: "https://assets.coingecko.com/coins/images/1167/large/VeChain-Logo-768x725.png"},
-  {id: "theta-token", symbol: "theta", name: "Theta Network", img: "https://assets.coingecko.com/coins/images/2538/large/theta-token-logo.png"},
-  {id: "the-sandbox", symbol: "sand", name: "The Sandbox", img: "https://assets.coingecko.com/coins/images/12129/large/sandbox_logo.jpg"},
-  {id: "decentraland", symbol: "mana", name: "Decentraland", img: "https://assets.coingecko.com/coins/images/878/large/decentraland-mana.png"},
-  {id: "axie-infinity", symbol: "axs", name: "Axie Infinity", img: "https://assets.coingecko.com/coins/images/13029/large/axie_infinity_logo.png"},
-  {id: "eos", symbol: "eos", name: "EOS", img: "https://assets.coingecko.com/coins/images/738/large/eos-eos-logo.png"},
-  {id: "tezos", symbol: "xtz", name: "Tezos", img: "https://assets.coingecko.com/coins/images/976/large/Tezos-logo.png"},
-  {id: "elrond-erd-2", symbol: "egld", name: "MultiversX", img: "https://assets.coingecko.com/coins/images/12335/large/egld-token-logo.png"},
-  {id: "neo", symbol: "neo", name: "NEO", img: "https://assets.coingecko.com/coins/images/480/large/NEO_512_512.png"},
-  {id: "flow", symbol: "flow", name: "Flow", img: "https://assets.coingecko.com/coins/images/13446/large/5f6294c0c7a8cda55cb1c936_Flow_Wordmark.png"},
-  {id: "klay-token", symbol: "klay", name: "Klaytn", img: "https://assets.coingecko.com/coins/images/9672/large/klaytn.png"},
-  {id: "kucoin-shares", symbol: "kcs", name: "KuCoin", img: "https://assets.coingecko.com/coins/images/1047/large/sa9QgOxP.png"},
-  {id: "synthetix-network-token", symbol: "snx", name: "Synthetix", img: "https://assets.coingecko.com/coins/images/3406/large/SNX.png"},
-  {id: "conflux-token", symbol: "cfx", name: "Conflux", img: "https://assets.coincap.io/assets/icons/cfx@2x.png"},
-  {id: "mina-protocol", symbol: "mina", name: "Mina Protocol", img: "https://assets.coingecko.com/coins/images/15628/large/mina.png"},
-  {id: "chiliz", symbol: "chz", name: "Chiliz", img: "https://assets.coingecko.com/coins/images/8834/large/Chiliz.png"},
-  {id: "gala", symbol: "gala", name: "GALA", img: "https://assets.coingecko.com/coins/images/12493/large/GALA-COINGECKO.png"},
-  {id: "huobi-token", symbol: "ht", name: "Huobi", img: "https://assets.coingecko.com/coins/images/2822/large/huobi-token-logo.png"},
-  {id: "bittorrent", symbol: "btt", name: "BitTorrent", img: "https://assets.coingecko.com/coins/images/22457/large/btt_logo.png"},
-  {id: "dydx", symbol: "dydx", name: "dYdX", img: "https://assets.coingecko.com/coins/images/17500/large/hjnIm9bV.jpg"},
-  {id: "pancakeswap-token", symbol: "cake", name: "PancakeSwap", img: "https://assets.coingecko.com/coins/images/12632/large/pancakeswap-cake-logo_%281%29.png"},
-  {id: "zcash", symbol: "zec", name: "Zcash", img: "https://assets.coingecko.com/coins/images/486/large/circle-zcash-color.png"},
-  {id: "iota", symbol: "miota", name: "IOTA", img: "https://assets.coingecko.com/coins/images/692/large/IOTA_Swirl.png"},
-  {id: "dash", symbol: "dash", name: "Dash", img: "https://assets.coingecko.com/coins/images/19/large/dash-logo.png"},
-  {id: "arweave", symbol: "ar", name: "Arweave", img: "https://assets.coingecko.com/coins/images/4343/large/o5OwxTC.png"},
-  {id: "curve-dao-token", symbol: "crv", name: "Curve DAO", img: "https://assets.coingecko.com/coins/images/12124/large/Curve.png"},
-  {id: "zilliqa", symbol: "zil", name: "Zilliqa", img: "https://assets.coingecko.com/coins/images/2687/large/Zilliqa-logo.png"},
-  {id: "1inch", symbol: "1inch", name: "1inch", img: "https://assets.coingecko.com/coins/images/13469/large/1inch-token.png"},
-  {id: "basic-attention-token", symbol: "bat", name: "Basic Attention Token", img: "https://assets.coingecko.com/coins/images/677/large/basic-attention-token.png"},
-  {id: "loopring", symbol: "lrc", name: "Loopring", img: "https://assets.coingecko.com/coins/images/913/large/LRC.png"},
-  {id: "enjincoin", symbol: "enj", name: "Enjin Coin", img: "https://assets.coingecko.com/coins/images/1102/large/enjin-coin-logo.png"},
-  {id: "celo", symbol: "celo", name: "Celo", img: "https://assets.coingecko.com/coins/images/11090/large/icon-celo-CELO-color-500.png"},
-  {id: "mask-network", symbol: "mask", name: "Mask Network", img: "https://assets.coincap.io/assets/icons/mask@2x.png"},
-  {id: "audius", symbol: "audio", name: "Audius", img: "https://assets.coingecko.com/coins/images/12913/large/Audius_Coin.png"},
-  {id: "api3", symbol: "api3", name: "API3", img: "https://assets.coingecko.com/coins/images/13256/large/api3.png"},
-  {id: "balancer", symbol: "bal", name: "Balancer", img: "https://assets.coingecko.com/coins/images/11683/large/Balancer.png"},
-  {id: "moonriver", symbol: "movr", name: "Moonriver", img: "https://assets.coingecko.com/coins/images/17984/large/movr.jpeg"},
-  {id: "band-protocol", symbol: "band", name: "Band Protocol", img: "https://assets.coingecko.com/coins/images/9545/large/band-protocol.png"},
-  {id: "flux-zelcash", symbol: "flux", name: "Flux", img: "https://assets.coingecko.com/coins/images/5163/large/Flux_icon.png"},
-  {id: "icon", symbol: "icx", name: "ICON", img: "https://assets.coingecko.com/coins/images/1060/large/icon-icx-logo.png"},
-  {id: "siacoin", symbol: "sc", name: "Siacoin", img: "https://assets.coingecko.com/coins/images/289/large/siacoin.png"},
-  {id: "digibyte", symbol: "dgb", name: "DigiByte", img: "https://assets.coingecko.com/coins/images/63/large/digibyte.png"},
-  {id: "hive", symbol: "hive", name: "Hive", img: "https://assets.coingecko.com/coins/images/10840/large/hive_logo_icon_transparent.png"},
-  {id: "wax", symbol: "waxp", name: "WAX", img: "https://assets.coingecko.com/coins/images/1372/large/WAX_Coin_Bright_RGB.png"},
-  {id: "biconomy", symbol: "bico", name: "Biconomy", img: "https://assets.coingecko.com/coins/images/21061/large/biconomy_logo.jpg"},
-  {id: "synapse-2", symbol: "syn", name: "Synapse", img: "https://assets.coingecko.com/coins/images/18029/large/synapse.png"},
-  {id: "stargate-finance", symbol: "stg", name: "Stargate Finance", img: "https://assets.coincap.io/assets/icons/stg@2x.png"},
-  {id: "threshold-network-token", symbol: "t", name: "Threshold", img: "https://assets.coingecko.com/coins/images/23246/large/threshold_logo.jpg"},
-  {id: "keep-network", symbol: "keep", name: "Keep Network", img: "https://assets.coingecko.com/coins/images/11096/large/keep-logo.png"},
-  {id: "nkn", symbol: "nkn", name: "NKN", img: "https://assets.coingecko.com/coins/images/3375/large/nkn.png"},
-  {id: "civic", symbol: "cvc", name: "Civic", img: "https://assets.coingecko.com/coins/images/788/large/civic.png"},
-  {id: "power-ledger", symbol: "powr", name: "Powerledger", img: "https://assets.coingecko.com/coins/images/1057/large/Powerledger_Logo.png"},
-  {id: "stormx", symbol: "stmx", name: "StormX", img: "https://assets.coingecko.com/coins/images/208/large/stormx.jpg"},
-  {id: "status", symbol: "snt", name: "Status", img: "https://assets.coingecko.com/coins/images/779/large/status.png"},
-  {id: "numeraire", symbol: "nmr", name: "Numeraire", img: "https://assets.coingecko.com/coins/images/752/large/numeraire.png"},
-  {id: "feathercoin", symbol: "ftc", name: "Feathercoin", img: "https://assets.coingecko.com/coins/images/373/large/feathercoin.png"}
-];
+const COIN_DB=[{id:"bitcoin",symbol:"btc",name:"Bitcoin",img:"https://assets.coingecko.com/coins/images/1/large/bitcoin.png"},{id:"ethereum",symbol:"eth",name:"Ethereum",img:"https://assets.coingecko.com/coins/images/279/large/ethereum.png"},{id:"binancecoin",symbol:"bnb",name:"BNB",img:"https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png"},{id:"solana",symbol:"sol",name:"Solana",img:"https://assets.coingecko.com/coins/images/4128/large/solana.png"},{id:"ripple",symbol:"xrp",name:"XRP",img:"https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png"},{id:"dogecoin",symbol:"doge",name:"Dogecoin",img:"https://assets.coingecko.com/coins/images/5/large/dogecoin.png"},{id:"cardano",symbol:"ada",name:"Cardano",img:"https://assets.coingecko.com/coins/images/975/large/cardano.png"},{id:"avalanche-2",symbol:"avax",name:"Avalanche",img:"https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png"},{id:"tron",symbol:"trx",name:"TRON",img:"https://assets.coingecko.com/coins/images/1094/large/tron-logo.png"},{id:"polkadot",symbol:"dot",name:"Polkadot",img:"https://assets.coingecko.com/coins/images/12171/large/polkadot.png"},{id:"chainlink",symbol:"link",name:"Chainlink",img:"https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png"},{id:"matic-network",symbol:"matic",name:"Polygon",img:"https://assets.coingecko.com/coins/images/4713/large/matic-token-icon.png"},{id:"shiba-inu",symbol:"shib",name:"Shiba Inu",img:"https://assets.coingecko.com/coins/images/11939/large/shiba.png"},{id:"litecoin",symbol:"ltc",name:"Litecoin",img:"https://assets.coingecko.com/coins/images/2/large/litecoin.png"},{id:"uniswap",symbol:"uni",name:"Uniswap",img:"https://assets.coingecko.com/coins/images/12504/large/uniswap-uni.png"}];
 
+// --- GLOBAL VARS ---
+let state = {
+  score: 0, totalPoints: 0, totalGames: 0, jokersUsed: 0, bestScore: 0,
+  jokersUnlockedUntil: 0, claimedBadges: [], 
+  lastWeekWinners: ["@crypto_guru", "@nft_whale"],
+  history: [{user: "@ayktbyr", score: 150, date: Date.now()-10000}]
+};
+let currentCoin, currentOptions, gameTimer, timerStart;
+let usedCoinIds = new Set();
+let activeJokers = { fifty: false, double: false };
+let doubleChanceUsed = false;
+let sessionJokers = { fifty: false, double: false };
+function isJokerUsed(type) { return sessionJokers[type]; }
+let isSessionActive = false;
+let leaderboardUnsub = null; 
+
+// --- FIREBASE INIT ---
+const firebaseConfig = {
+  apiKey: "AIzaSyB0A7JmzBTX821HB2rYdp9tdr8Ybuxcy4Y",
+  authDomain: "icon-master-cae3a.firebaseapp.com",
+  projectId: "icon-master-cae3a",
+  storageBucket: "icon-master-cae3a.firebasestorage.app",
+  messagingSenderId: "141387750366",
+  appId: "1:141387750366:web:341723eeae0cabc0bf5b4f",
+  measurementId: "G-FZF3SRK1P0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// --- GAME LOGIC ---
 function handleImageError(img) {
   if (!img || !currentCoin) return;
   if (img.src.includes('assets.coincap.io')) {
@@ -566,44 +400,35 @@ function handleImageError(img) {
   }
   img.src = `https://assets.coincap.io/assets/icons/${currentCoin.symbol.toLowerCase()}@2x.png`;
 }
+// Explicitly attach handleImageError to the image element in renderGameScreen instead of window.
+// Removed: window.handleImageError = handleImageError;
 
-let state = {
-  score: 0, totalPoints: 0, totalGames: 0, jokersUsed: 0, bestScore: 0,
-  jokersUnlockedUntil: 0, claimedBadges: [], 
-  lastWeekWinners: ["@crypto_guru", "@nft_whale"], // Placeholder fallback
-  history: [{user: "@ayktbyr", score: 150, date: Date.now()-10000}]
-};
-let currentCoin, currentOptions, gameTimer, timerStart;
-let usedCoinIds = new Set();
-let activeJokers = { fifty: false, double: false };
-let doubleChanceUsed = false;
-let sessionJokers = { fifty: false, double: false };
-function isJokerUsed(type) { return sessionJokers[type]; }
-let isSessionActive = false; 
-
-if(window.initGame) window.initGame();
-
-function saveState() { localStorage.setItem('iconMasterV23', JSON.stringify(state)); updateUI(); checkBadges(); }
+function saveState() { localStorage.setItem('iconMasterV24', JSON.stringify(state)); updateUI(); checkBadges(); }
 function loadState() {
-  const saved = localStorage.getItem('iconMasterV23');
+  const saved = localStorage.getItem('iconMasterV24');
   if (saved) state = {...state, ...JSON.parse(saved)};
   if(!state.claimedBadges) state.claimedBadges = [];
   if(!state.lastWeekWinners) state.lastWeekWinners = ["@crypto_guru", "@nft_whale"];
 }
 
-function navTo(screenName) {
+function updateUI() {
+    document.getElementById('displayBestScore').innerText = state.bestScore;
+    if(document.getElementById('homeTotalPoints')) document.getElementById('homeTotalPoints').innerText = state.totalPoints;
+    if(document.getElementById('homeStreak')) document.getElementById('homeStreak').innerText = state.totalGames;
+}
+
+// Expose navigation to window
+window.navTo = function(screenName) {
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById(`screen-${screenName}`).classList.add('active');
-  if(screenName === 'leaderboard') renderLeaderboard('daily');
+  if(screenName === 'leaderboard') initLeaderboardListener('daily');
   if(screenName === 'quests') { updateQuestLeaders(); renderBadges(); }
-}
+};
 
-async function startGameFlow() {
-  if (isSessionActive) {
-      launchGame();
-      return;
-  }
+// Expose game functions
+window.startGameFlow = async function() {
+  if (isSessionActive) { launchGame(); return; }
 
   const btn = document.getElementById('btnStartGame');
   btn.disabled = true; btn.innerHTML = '<div class="loader"></div>';
@@ -615,7 +440,7 @@ async function startGameFlow() {
     } else if (window.ethereum) {
       provider = new ethers.BrowserProvider(window.ethereum, "any");
     } else {
-      throw new Error("No wallet found.");
+      throw new Error("Wallet not found.");
     }
     
     try { await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2105" }]); } catch(e){}
@@ -637,24 +462,23 @@ async function startGameFlow() {
     let msg = "Transaction cancelled.";
     if (err.code === "INSUFFICIENT_FUNDS") msg = "Insufficient funds (ETH required on Base).";
     else if (err.code === "ACTION_REJECTED") msg = "Transaction rejected by user.";
-    
     alert(msg);
   } finally {
     btn.disabled = false; btn.innerText = "Start Game";
   }
-}
+};
 
 function launchGame() {
   state.score = 0; usedCoinIds.clear();
   activeJokers = { fifty: false, double: false }; sessionJokers = { fifty: false, double: false };
   doubleChanceUsed = false;
-  navTo('game'); nextLevel();
+  window.navTo('game'); nextLevel();
 }
 
-function restartGame() {
-    closeModal();
+window.restartGame = function() {
+    window.closeModal();
     launchGame(); 
-}
+};
 
 function nextLevel() {
   if (usedCoinIds.size >= COIN_DB.length) { endGame("All Coins Completed!"); return; }
@@ -683,7 +507,11 @@ function nextLevel() {
 }
 
 function renderGameScreen() {
-  document.getElementById('coinImage').src = currentCoin.img;
+  const img = document.getElementById('coinImage');
+  // Attaching error handler programmatically to avoid scope issues
+  img.onerror = function() { handleImageError(this); };
+  img.src = currentCoin.img;
+
   document.getElementById('gameScore').innerText = state.score;
   const grid = document.getElementById('optionsGrid'); grid.innerHTML = '';
   currentOptions.forEach(opt => {
@@ -747,21 +575,105 @@ function handleTimeout() {
     setTimeout(() => endGame("Time's Up!"), 1500);
 }
 
-function endGame(msg) {
+async function endGame(msg) {
   state.totalGames++; state.totalPoints += state.score;
   if(state.score > state.bestScore) state.bestScore = state.score;
-  state.history.push({user:"You", score:state.score, date:Date.now()});
   saveState();
   
+  // FIREBASE SAVE
+  try {
+      await addDoc(collection(db, "scores"), {
+          user: "Anonymous", 
+          score: state.score,
+          timestamp: Timestamp.now()
+      });
+      console.log("Score saved to Firebase!");
+  } catch (e) {
+      console.error("Error adding score: ", e);
+  }
+
   document.getElementById('resScoreVal').innerText = state.score;
   document.getElementById('resBestVal').innerText = state.bestScore;
-  
   document.getElementById('modalOverlay').classList.remove('hidden');
   document.getElementById('modalBox').classList.remove('hidden');
 }
 
-function useJoker(type) {
-  if(Date.now() > state.jokersUnlockedUntil) { alert("Complete Quests first!"); navTo('quests'); return; }
+// --- FIREBASE LEADERBOARD ---
+function initLeaderboardListener(filter) {
+    if(leaderboardUnsub) leaderboardUnsub();
+
+    const scoresRef = collection(db, "scores");
+    let q;
+
+    if (filter === 'daily') {
+        q = query(scoresRef, orderBy("score", "desc"), limit(100));
+    } else {
+        q = query(scoresRef, orderBy("score", "desc"), limit(50));
+    }
+
+    const btnDaily = document.getElementById('lbBtnDaily');
+    const btnAll = document.getElementById('lbBtnAll');
+    
+    if(filter === 'daily') {
+        btnDaily.classList.add('active');
+        btnAll.classList.remove('active');
+    } else {
+        btnAll.classList.add('active');
+        btnDaily.classList.remove('active');
+    }
+
+    leaderboardUnsub = onSnapshot(q, (snapshot) => {
+        const list = document.getElementById('lb-list');
+        list.innerHTML = "";
+        let data = [];
+        snapshot.forEach((doc) => {
+            data.push(doc.data());
+        });
+
+        if(filter === 'daily') {
+             const start = new Date();
+             start.setHours(0,0,0,0);
+             data = data.filter(item => item.timestamp && item.timestamp.toDate() > start);
+        }
+
+        const seenUsers = new Set();
+        const uniqueData = [];
+        data.forEach(item => {
+            if(!seenUsers.has(item.user)) {
+                seenUsers.add(item.user);
+                uniqueData.push(item);
+            }
+        });
+
+        if (uniqueData.length === 0) {
+            list.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">No games played yet!</div>';
+            return;
+        }
+        
+        if(uniqueData.length > 0) {
+             state.lastWeekWinners = [uniqueData[0].user]; 
+        }
+
+        uniqueData.slice(0, 20).forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'list-item';
+            row.innerHTML = `
+              <div class="list-rank">${index + 1}</div>
+              <div class="list-user">${item.user}</div>
+              <div class="list-score">${item.score} pts</div>
+            `;
+            list.appendChild(row);
+        });
+    });
+}
+
+// Expose helpers to window
+window.renderLeaderboard = function(filter) {
+    initLeaderboardListener(filter);
+};
+
+window.useJoker = function(type) {
+  if(Date.now() > state.jokersUnlockedUntil) { alert("Complete Quests first!"); window.navTo('quests'); return; }
   if(sessionJokers[type]) return;
   state.jokersUsed++;
   if(type === '5050') {
@@ -774,17 +686,19 @@ function useJoker(type) {
     document.getElementById('btnJokerDouble').classList.add('active');
   }
   saveState();
-}
+};
 
-function verifyQuest() {
+window.verifyQuest = function() {
     state.jokersUnlockedUntil = Date.now() + 86400000; saveState();
     updateJokerStatus(); confetti();
-}
+};
+
 function updateJokerStatus() {
     const active = Date.now() < state.jokersUnlockedUntil;
     document.getElementById('questTimer').style.display = active ? 'block' : 'none';
     document.getElementById('btnVerifyQuest').style.display = active ? 'none' : 'block';
 }
+
 function updateQuestLeaders() {
     const container = document.getElementById('quest-profiles-container');
     if(!container) return;
@@ -792,32 +706,24 @@ function updateQuestLeaders() {
     <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/ayktbyr')" class="profile-chip">@ayktbyr</div>
     <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/atmacxa')" class="profile-chip">@atmacxa</div>`;
     
-    // Add daily winner if available
     if (state.lastWeekWinners && Array.isArray(state.lastWeekWinners)) {
-       // Only take the first one as the "Daily Winner"
-       const winner = state.lastWeekWinners[0];
-       if(winner) {
+       state.lastWeekWinners.forEach(user => {
            const chip = document.createElement('div');
            chip.className = 'profile-chip winner';
-           chip.innerHTML = `👑 ${winner}`;
-           // Optional click handler
-           chip.onclick = function() { if(window.sdk) window.sdk.actions.openUrl(`https://warpcast.com/${winner.replace('@','')}`); };
+           chip.innerText = `👑 ${user}`;
+           chip.onclick = function() { if(window.sdk) window.sdk.actions.openUrl(`https://warpcast.com/${user.replace('@','')}`); };
            container.appendChild(chip);
-       }
+       });
     }
 }
-function updateUI() {
-    document.getElementById('displayBestScore').innerText = state.bestScore;
-    if(document.getElementById('homeTotalPoints')) document.getElementById('homeTotalPoints').innerText = state.totalPoints;
-    if(document.getElementById('homeStreak')) document.getElementById('homeStreak').innerText = state.totalGames;
-}
-function closeModal() {
+
+window.closeModal = function() {
     document.getElementById('modalOverlay').classList.add('hidden');
     document.getElementById('modalBox').classList.add('hidden');
-    navTo('home'); 
-}
+    window.navTo('home'); 
+};
 
-async function claimBadge(id) {
+window.claimBadge = async function(id) {
   if(state.claimedBadges.includes(id)) return;
   if(CONTRACT_ADDRESS.length < 40) { alert("Contract address missing."); return; }
   
@@ -837,24 +743,24 @@ async function claimBadge(id) {
   } catch (err) {
     alert("Mint failed: " + (err.reason || err.message));
   }
-}
+};
 
 function checkBadges() { 
-  // Only check score/game based badges. Rank badges require global DB.
-  if(state.totalGames >= 5 && !state.claimedBadges.includes('games_5')) { /* logic to show notification */ }
+  // Logic to check badges and show notification if needed
 }
+
 function renderBadges() {
   const container = document.getElementById('badgesContainer');
   container.innerHTML = '';
   
   BADGE_DEFS.forEach(badge => {
     let conditionMet = false;
-    // Logic for local conditions
     if (badge.type === 'games' && state.totalGames >= badge.target) conditionMet = true;
     if (badge.type === 'highScore' && state.bestScore >= badge.target) conditionMet = true;
     if (badge.type === 'jokers' && state.jokersUsed >= badge.target) conditionMet = true;
 
     const isClaimed = state.claimedBadges.includes(badge.id);
+
     const div = document.createElement('div');
     div.id = `badge-${badge.id}`;
     
@@ -866,7 +772,7 @@ function renderBadges() {
       actionHtml = '<div class="claimed-tag">OWNED</div>';
     } else if (conditionMet) {
       stateClass = 'can-claim';
-      actionHtml = `<button class="claim-btn" onclick="claimBadge('${badge.id}')">MINT</button>`;
+      actionHtml = `<button class="claim-btn" onclick="window.claimBadge('${badge.id}')">CLAIM</button>`;
     }
 
     div.className = `badge-item ${stateClass}`;
@@ -879,59 +785,9 @@ function renderBadges() {
     container.appendChild(div);
   });
 }
-function renderLeaderboard(filter) {
-  const btnDaily = document.getElementById('lbBtnDaily');
-  const btnAll = document.getElementById('lbBtnAll');
-  
-  if(filter === 'daily') {
-      btnDaily.classList.add('active');
-      btnAll.classList.remove('active');
-  } else {
-      btnAll.classList.add('active');
-      btnDaily.classList.remove('active');
-  }
 
-  const list = document.getElementById('lb-list');
-  list.innerHTML = '';
-
-  let data = [...state.history];
-  
-  if (filter === 'daily') {
-    const startOfDay = new Date();
-    startOfDay.setHours(0,0,0,0);
-    data = data.filter(item => item.date > startOfDay.getTime());
-  }
-
-  data.sort((a,b) => b.score - a.score);
-  
-  // Unique Users Logic (Show only best score per user)
-  const seenUsers = new Set();
-  const uniqueData = [];
-  data.forEach(item => {
-    if(!seenUsers.has(item.user)) {
-      seenUsers.add(item.user);
-      uniqueData.push(item);
-    }
-  });
-
-  const finalData = uniqueData.slice(0, 20);
-
-  if (finalData.length === 0) {
-    list.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">No games played yet!</div>';
-    return;
-  }
-
-  finalData.forEach((item, index) => {
-    const row = document.createElement('div');
-    row.className = 'list-item';
-    row.innerHTML = `
-      <div class="list-rank">${index + 1}</div>
-      <div class="list-user">${item.user}</div>
-      <div class="list-score">${item.score} pts</div>
-    `;
-    list.appendChild(row);
-  });
-}
+// Initialization
+loadState();
 </script>
 </body>
 </html>
