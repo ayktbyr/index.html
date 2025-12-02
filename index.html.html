@@ -7,15 +7,18 @@
   
   <link rel="icon" href="https://icon-master-demo.vercel.app/splash.png">
 
+  <!-- FARCASTER METADATA -->
   <meta property="fc:frame" content='{"version":"next","imageUrl":"https://icon-master-demo.vercel.app/og-image.png","button":{"title":"Play Icon Master","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://icon-master-demo.vercel.app/splash.png","splashBackgroundColor":"#0f172a"}}}' />
   
   <meta property="og:title" content="Icon Master" />
   <meta property="og:description" content="Race against time. Guess 250+ crypto icons. Become the Daily King!" />
   <meta property="og:image" content="https://icon-master-demo.vercel.app/og-image.png" />
 
+  <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
+  <!-- Farcaster SDK -->
   <script type="module">
     import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
     window.sdk = sdk; 
@@ -24,12 +27,7 @@
       updateUI();
       updateJokerStatus();
       updateQuestLeaders();
-      try { 
-          await sdk.actions.ready(); 
-          console.log("Farcaster SDK Ready");
-      } catch (e) {
-          console.error("SDK Error:", e);
-      }
+      try { await sdk.actions.ready(); } catch (e) {}
     };
   </script>
 
@@ -104,6 +102,7 @@
     }
     .personal-best span { color: var(--gold); font-weight: bold; }
 
+    /* --- Content Area --- */
     .content {
       flex: 1;
       overflow-y: auto;
@@ -200,6 +199,17 @@
       opacity: 0; pointer-events: none; z-index: 10;
     }
     .score-popup.pop { animation: popUp 1s ease forwards; }
+    
+    .game-over-text {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        font-size: 1.2rem; font-weight: 900; color: var(--danger);
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        text-align: center;
+        display: none; z-index: 15;
+        background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 8px;
+        pointer-events: none;
+    }
+
     @keyframes popUp { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 50% { transform: translateY(-20px) scale(1.2); } 100% { opacity: 0; transform: translateY(-40px) scale(1); } }
 
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
@@ -226,7 +236,7 @@
     /* --- Leaderboard Filters --- */
     .lb-filters { 
         display:flex; gap:10px; margin-bottom: 15px; 
-        position: relative; z-index: 30; /* Tıklama sorunu için Z-index */
+        position: relative; z-index: 30; 
     }
     .lb-btn { 
       flex: 1; padding: 12px; font-size: 0.85rem; 
@@ -234,6 +244,7 @@
       color: var(--text-muted); border-radius: 8px; cursor: pointer;
       transition: all 0.2s ease;
     }
+    .lb-btn:active { transform: scale(0.95); }
     .lb-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: bold; }
     .list-item {
       background: var(--card-bg); border-radius: 12px; padding: 12px;
@@ -254,6 +265,7 @@
       display: flex; align-items: center; gap: 4px;
       text-decoration: none; transition: background 0.2s; cursor: pointer;
     }
+    .profile-chip:hover { background: rgba(99, 102, 241, 0.4); }
     .profile-chip.winner { border-color: var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.15); }
     
     .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
@@ -265,6 +277,7 @@
     }
     .badge-item.can-claim { opacity: 1; border-color: var(--primary); box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); animation: pulseBorder 2s infinite; }
     .badge-item.owned { opacity: 1; border-color: var(--gold); background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, rgba(0,0,0,0) 70%); }
+    @keyframes pulseBorder { 0% { border-color: var(--primary); } 50% { border-color: white; } 100% { border-color: var(--primary); } }
     .badge-icon { font-size: 1.8rem; margin-bottom: 6px; display: block; }
     .badge-name { font-size: 0.65rem; font-weight: bold; }
     .badge-desc { font-size: 0.55rem; color: var(--text-muted); margin-top: 2px; }
@@ -281,8 +294,7 @@
       background: none; border: none; color: var(--text-muted); font-size: 0.75rem;
       display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 10px;
     }
-    .nav-item svg { width: 24px; height: 24px; fill: currentColor; }
-    .nav-item.active { color: var(--primary); }
+    .nav-item svg { width: 24px; height: 24px; fill: currentColor; } .nav-item.active { color: var(--primary); }
 
     /* --- Modal --- */
     .overlay { position: fixed; inset:0; background: rgba(0,0,0,0.85); z-index: 2000; }
@@ -319,6 +331,7 @@
   </header>
 
   <div class="content">
+    <!-- HOME -->
     <div id="screen-home" class="screen active">
       <div class="hero-card">
         <div class="hero-icon-wrapper">
@@ -341,6 +354,7 @@
       </div>
     </div>
 
+    <!-- GAME -->
     <div id="screen-game" class="screen">
       <div class="game-header">
         <div class="game-stat">Score: <span id="gameScore" style="color:var(--primary)">0</span></div>
@@ -351,6 +365,7 @@
         <img id="coinImage" class="coin-img" src="" alt="Crypto Icon" onerror="handleImageError(this)">
         <div id="coinFallback">BTC</div>
         <div class="score-popup" id="scorePopup">+10</div>
+        <div class="game-over-text" id="gameOverIndicator">GAME OVER</div>
       </div>
       <div class="options-grid" id="optionsGrid"></div>
       <div class="jokers-area">
@@ -359,6 +374,7 @@
       </div>
     </div>
 
+    <!-- QUESTS -->
     <div id="screen-quests" class="screen">
       <h2 style="margin-top: 0;">Joker Activation</h2>
       <div class="quest-card">
@@ -372,6 +388,7 @@
       <div class="badge-grid" id="badgesContainer"></div>
     </div>
 
+    <!-- LEADERBOARD -->
     <div id="screen-leaderboard" class="screen">
       <div class="lb-filters">
         <button id="lbBtnDaily" class="lb-btn active" onclick="renderLeaderboard('daily')">Daily</button>
@@ -385,6 +402,7 @@
     </div>
   </div>
 
+  <!-- NAV BAR -->
   <nav class="nav-bar">
     <button class="nav-item active" onclick="navTo('home')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Play</button>
     <button class="nav-item" onclick="navTo('quests')"><svg viewBox="0 0 24 24"><path d="M12 2L1 21h22M12 6l7.53 13H4.47"/></svg>Quests</button>
@@ -392,6 +410,7 @@
   </nav>
 </div>
 
+<!-- RESULT MODAL -->
 <div class="overlay hidden" id="modalOverlay"></div>
 <div class="result-modal hidden" id="modalBox">
   <div class="res-title">GAME OVER</div>
@@ -587,21 +606,19 @@ const COIN_DB = [
 
 function handleImageError(img) {
   if (!img || !currentCoin) return;
-  // If fallback failed too, just show text
   if (img.src.includes('assets.coincap.io')) {
     img.style.display = 'none';
     document.getElementById('coinFallback').style.display = 'flex';
     document.getElementById('coinFallback').innerText = currentCoin.symbol.toUpperCase();
     return;
   }
-  // First fallback
   img.src = `https://assets.coincap.io/assets/icons/${currentCoin.symbol.toLowerCase()}@2x.png`;
 }
 
 let state = {
   score: 0, totalPoints: 0, totalGames: 0, jokersUsed: 0, bestScore: 0,
   jokersUnlockedUntil: 0, claimedBadges: [], 
-  lastWeekWinners: ["@crypto_guru", "@nft_whale"], 
+  lastWeekWinners: ["@crypto_guru", "@nft_whale"],
   history: [{user: "@ayktbyr", score: 150, date: Date.now()-10000}]
 };
 let currentCoin, currentOptions, gameTimer, timerStart;
@@ -610,13 +627,13 @@ let activeJokers = { fifty: false, double: false };
 let doubleChanceUsed = false;
 let sessionJokers = { fifty: false, double: false };
 function isJokerUsed(type) { return sessionJokers[type]; }
-let isSessionActive = false; // Flag for one-time TX per session
+let isSessionActive = false; 
 
 if(window.initGame) window.initGame();
 
-function saveState() { localStorage.setItem('iconMasterV20', JSON.stringify(state)); updateUI(); checkBadges(); }
+function saveState() { localStorage.setItem('iconMasterV22', JSON.stringify(state)); updateUI(); checkBadges(); }
 function loadState() {
-  const saved = localStorage.getItem('iconMasterV20');
+  const saved = localStorage.getItem('iconMasterV22');
   if (saved) state = {...state, ...JSON.parse(saved)};
   if(!state.claimedBadges) state.claimedBadges = [];
   if(!state.lastWeekWinners) state.lastWeekWinners = ["@crypto_guru", "@nft_whale"];
@@ -630,7 +647,7 @@ function navTo(screenName) {
   if(screenName === 'quests') { updateQuestLeaders(); renderBadges(); }
 }
 
-// --- UPDATED START GAME FLOW FOR MOBILE / WARPCAST ---
+// START GAME (Check Wallet & Network)
 async function startGameFlow() {
   if (isSessionActive) {
       launchGame();
@@ -638,72 +655,42 @@ async function startGameFlow() {
   }
 
   const btn = document.getElementById('btnStartGame');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="loader"></div>';
+  btn.disabled = true; btn.innerHTML = '<div class="loader"></div>';
   
   try {
-    let ethProvider;
-    // 1. Prioritize Farcaster SDK Provider
+    let provider;
     if (window.sdk && window.sdk.wallet && window.sdk.wallet.ethProvider) {
-      ethProvider = window.sdk.wallet.ethProvider;
-    } 
-    // 2. Fallback to standard window.ethereum (MetaMask etc.)
-    else if (window.ethereum) {
-      ethProvider = window.ethereum;
+      provider = new ethers.BrowserProvider(window.sdk.wallet.ethProvider, "any");
+    } else if (window.ethereum) {
+      provider = new ethers.BrowserProvider(window.ethereum, "any");
     } else {
-      throw new Error("No wallet provider found. Please open in Warpcast or a Web3 browser.");
+      throw new Error("Wallet not found.");
     }
     
-    const provider = new ethers.BrowserProvider(ethProvider, "any");
+    // Auto-switch network
+    try { await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2105" }]); } catch(e){}
 
-    // 3. Request Access
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
     
-    // 4. Force Network Switch to Base (Chain ID 8453 / 0x2105)
-    const { chainId } = await provider.getNetwork();
-    const BASE_CHAIN_ID_HEX = "0x2105"; // 8453 in hex
-    
-    if (chainId !== 8453n) {
-        try {
-            await provider.send("wallet_switchEthereumChain", [{ chainId: BASE_CHAIN_ID_HEX }]);
-        } catch (switchError) {
-            // This error code 4902 means the chain has not been added to the wallet.
-            if (switchError.code === 4902) {
-                 await provider.send("wallet_addEthereumChain", [{
-                    chainId: BASE_CHAIN_ID_HEX,
-                    chainName: "Base",
-                    nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
-                    rpcUrls: ["https://mainnet.base.org"],
-                    blockExplorerUrls: ["https://basescan.org"]
-                }]);
-            } else {
-                throw switchError;
-            }
-        }
-    }
-
-    // 5. One-Time Verification Transaction (0 ETH)
+    // REAL TX to verify/start (0 ETH) - Added Gas Limit to fix Estimation Error
     const tx = { 
-        to: await signer.getAddress(), 
-        value: 0 
+      to: await signer.getAddress(), 
+      value: 0,
+      gasLimit: 25000 // FIX: Force gas limit to skip estimation
     }; 
+    await signer.sendTransaction(tx);
     
-    const txResponse = await signer.sendTransaction(tx);
-    console.log("TX Hash:", txResponse.hash);
-    
-    // Optional: await txResponse.wait(); // Uncomment if you want to wait for block inclusion
-
     isSessionActive = true; 
     launchGame();
-
   } catch (err) {
-    console.error("Game Start Error:", err);
-    // Show specific error on mobile screen
-    alert("Verification Failed: " + (err.reason || err.message || "Unknown error"));
+    let msg = "Transaction cancelled.";
+    if (err.code === "INSUFFICIENT_FUNDS") msg = "Insufficient funds (ETH required on Base).";
+    else if (err.code === "ACTION_REJECTED") msg = "Transaction rejected by user.";
+    
+    alert(msg);
   } finally {
-    btn.disabled = false; 
-    btn.innerText = "Start Game";
+    btn.disabled = false; btn.innerText = "Start Game";
   }
 }
 
@@ -716,7 +703,7 @@ function launchGame() {
 
 function restartGame() {
     closeModal();
-    // Since session is active, launchGame won't ask for TX again
+    // Direct launch without TX if session is active
     launchGame(); 
 }
 
@@ -732,6 +719,7 @@ function nextLevel() {
   document.getElementById('scorePopup').classList.remove('pop');
   document.getElementById('coinImage').style.display = 'block';
   document.getElementById('coinFallback').style.display = 'none';
+  document.getElementById('gameOverIndicator').style.display = 'none';
   
   let pool = COIN_DB.filter(c => !usedCoinIds.has(c.id));
   if(pool.length === 0) { pool = COIN_DB; usedCoinIds.clear(); }
@@ -796,6 +784,7 @@ function handleAnswer(id, btn) {
     }
     clearInterval(gameTimer);
     Array.from(document.querySelectorAll('.option-btn')).find(b => b.innerText === currentCoin.name).classList.add('correct');
+    document.getElementById('gameOverIndicator').style.display = 'block';
     setTimeout(() => endGame("Wrong Answer!"), 1500);
   }
 }
@@ -805,6 +794,7 @@ function handleTimeout() {
       b.disabled = true;
       if (b.innerText === currentCoin.name) b.classList.add('correct');
     });
+    document.getElementById('gameOverIndicator').style.display = 'block';
     setTimeout(() => endGame("Time's Up!"), 1500);
 }
 
@@ -822,7 +812,7 @@ function endGame(msg) {
 }
 
 function useJoker(type) {
-  if(Date.now() > state.jokersUnlockedUntil) { alert("Verify Quest first!"); navTo('quests'); return; }
+  if(Date.now() > state.jokersUnlockedUntil) { alert("Complete Quests first!"); navTo('quests'); return; }
   if(sessionJokers[type]) return;
   state.jokersUsed++;
   if(type === '5050') {
@@ -838,7 +828,6 @@ function useJoker(type) {
 }
 
 function verifyQuest() {
-    // In a real app, you'd check API for follows. Simulating here.
     state.jokersUnlockedUntil = Date.now() + 86400000; saveState();
     updateJokerStatus(); confetti();
 }
@@ -874,31 +863,19 @@ function closeModal() {
     navTo('home'); 
 }
 
-// ON-CHAIN CLAIM
+// ON-CHAIN MINT
 async function claimBadge(id) {
   if(state.claimedBadges.includes(id)) return;
+  if(CONTRACT_ADDRESS.length < 40) { alert("Contract address missing."); return; }
   
   try {
-    let ethProvider;
-    if (window.sdk && window.sdk.wallet && window.sdk.wallet.ethProvider) {
-       ethProvider = window.sdk.wallet.ethProvider;
-    } else {
-       ethProvider = window.ethereum;
-    }
-    if(!ethProvider) throw new Error("No wallet");
-
-    const provider = new ethers.BrowserProvider(ethProvider, "any");
+    const provider = new ethers.BrowserProvider(window.sdk?.wallet?.ethProvider || window.ethereum, "any");
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
-    
-    // Ensure Base network for claim too
-    const { chainId } = await provider.getNetwork();
-    if (chainId !== 8453n) {
-         try { await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2105" }]); } catch(e){}
-    }
-
     const contract = new ethers.Contract(CONTRACT_ADDRESS, MINIMAL_ABI, signer);
-    const tx = await contract.mint(BADGE_ID_MAP[id], 1);
+    
+    // Added gasLimit to fix estimation error
+    const tx = await contract.mint(BADGE_ID_MAP[id], 1, { gasLimit: 150000 });
     console.log("Mint TX:", tx.hash);
     
     state.claimedBadges.push(id);
@@ -910,33 +887,10 @@ async function claimBadge(id) {
   }
 }
 
-function checkBadges() { 
-    // Logic remains same, omitted for brevity but badges work via renderBadges
-}
-function renderBadges() {
-    const container = document.getElementById('badgesContainer');
-    container.innerHTML = '';
-    BADGE_DEFS.forEach(b => {
-        const owned = state.claimedBadges.includes(b.id);
-        const div = document.createElement('div');
-        div.className = `badge-item ${owned ? 'owned' : ''}`;
-        div.onclick = () => { if(!owned) claimBadge(b.id); };
-        div.innerHTML = `<span class="badge-icon">${b.icon}</span><span class="badge-name">${b.title}</span><div class="badge-desc">${b.desc}</div>`;
-        container.appendChild(div);
-    });
-}
-function renderLeaderboard(filter) { 
-    const list = document.getElementById('lb-list');
-    list.innerHTML = '';
-    // Mock data for demo
-    let data = filter === 'daily' ? 
-      [{rank:1, user:"@ayktbyr", score:2500}, {rank:2, user:"@user2", score:2100}] : 
-      [{rank:1, user:"@whale", score:50000}, {rank:2, user:"@ayktbyr", score:45000}];
-      
-    data.forEach(d => {
-        list.innerHTML += `<div class="list-item"><span class="list-rank">#${d.rank}</span><span class="list-user">${d.user}</span><span class="list-score">${d.score}</span></div>`;
-    });
-}
+function checkBadges() { /* logic same */ }
+function renderBadges() { /* logic same */ }
+function renderLeaderboard(filter) { /* logic same */ }
+
 </script>
 </body>
 </html>
