@@ -34,11 +34,11 @@
   <style>
     :root {
       --bg-color: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.9);
-      --primary: #6366f1;
-      --accent: #8b5cf6;
-      --success: #22c55e;
-      --danger: #ef4444;
+      --card-bg: rgba(30, 41, 59, 0.95); /* Slightly more opaque */
+      --primary: #8b5cf6; /* Vivid Violet */
+      --accent: #6366f1; /* Indigo */
+      --success: #10b981; /* Emerald */
+      --danger: #ef4444; /* Red */
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --gold: #fbbf24;
@@ -49,7 +49,7 @@
     
     body {
       margin: 0;
-      background: radial-gradient(circle at center top, #1e293b 0%, #020617 100%);
+      background: radial-gradient(circle at center top, #1e1b4b 0%, #020617 100%); /* Deeper purple/black bg */
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       height: 100vh;
@@ -65,7 +65,7 @@
       height: 100%;
       margin: 0 auto;
       position: relative;
-      background: rgba(15, 23, 42, 0.5);
+      background: rgba(15, 23, 42, 0.3);
       display: flex;
       flex-direction: column;
     }
@@ -75,248 +75,271 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(2, 6, 23, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: rgba(2, 6, 23, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       z-index: 20;
       flex-shrink: 0;
     }
 
     .brand {
-      font-weight: 800;
-      font-size: 1.1rem;
+      font-weight: 900;
+      font-size: 1.2rem;
       background: linear-gradient(to right, var(--primary), var(--accent));
       -webkit-background-clip: text;
       color: transparent;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .personal-best {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       background: rgba(255,255,255,0.05);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 20px;
       border: 1px solid rgba(255,255,255,0.1);
+      font-weight: 600;
     }
-    .personal-best span { color: var(--gold); font-weight: bold; }
+    .personal-best span { color: var(--gold); }
 
     /* --- Content Area --- */
     .content {
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      padding: 16px;
-      padding-bottom: calc(var(--nav-height) + 40px); 
+      padding: 20px;
+      padding-bottom: calc(var(--nav-height) + 30px); 
       position: relative;
       z-index: 10;
     }
 
     .screen {
       display: none;
-      animation: fadeIn 0.3s ease;
+      animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       width: 100%;
       flex-direction: column;
     }
     .screen.active { display: flex; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- UI Components --- */
     .btn-main {
-      background: linear-gradient(90deg, var(--primary), var(--accent));
-      color: white; border: none; width: 100%; padding: 16px; border-radius: 16px;
-      font-size: 1.1rem; font-weight: 700; cursor: pointer;
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); transition: transform 0.1s;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white; border: none; width: 100%; padding: 16px; border-radius: 18px;
+      font-size: 1.1rem; font-weight: 800; cursor: pointer;
+      box-shadow: 0 8px 20px -5px rgba(139, 92, 246, 0.5);
+      transition: transform 0.1s, box-shadow 0.2s;
       margin-top: 20px; display: flex; justify-content: center; align-items: center;
     }
-    .btn-main:active { transform: scale(0.98); }
+    .btn-main:active { transform: scale(0.97); box-shadow: 0 4px 10px -5px rgba(139, 92, 246, 0.5); }
     .btn-main:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
     
     .btn-secondary {
-      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-      color: var(--text); width: 100%; padding: 12px; border-radius: 16px;
-      font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: var(--text); width: 100%; padding: 14px; border-radius: 18px;
+      font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 12px;
+      transition: background 0.2s;
     }
+    .btn-secondary:hover { background: rgba(255,255,255,0.12); }
 
     .hero-card {
-      background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
-      border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 30px 20px;
-      text-align: center; margin-bottom: 20px;
-      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6);
-      display: flex; flex-direction: column; align-items: center; gap: 16px;
+      background: linear-gradient(160deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      padding: 40px 24px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
     }
 
     .hero-icon-wrapper {
-      width: 80px; height: 80px;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+      width: 90px; height: 90px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
       border-radius: 50%; display: flex; align-items: center; justify-content: center;
       margin-bottom: 5px;
     }
-    .hero-icon-svg { width: 48px; height: 48px; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.6)); }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .hero-icon-svg { width: 54px; height: 54px; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.5)); }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
     .hero-stats-bar { display: flex; gap: 12px; width: 100%; justify-content: center; }
     .stat-pill {
       background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-      padding: 6px 12px; border-radius: 12px; font-size: 0.8rem;
+      padding: 8px 16px; border-radius: 14px; font-size: 0.85rem;
       display: flex; align-items: center; gap: 6px; color: var(--text-muted);
     }
-    .stat-pill b { color: var(--text); font-size: 0.9rem; }
+    .stat-pill b { color: var(--text); font-size: 1rem; }
     .stat-pill.highlight b { color: var(--primary); }
 
     .hero-title {
-      margin: 0; font-size: 1.8rem; font-weight: 800;
-      background: linear-gradient(to bottom right, #fff, #94a3b8);
+      margin: 0; font-size: 2rem; font-weight: 900;
+      background: linear-gradient(to bottom right, #fff, #a5b4fc);
       -webkit-background-clip: text; color: transparent;
+      letter-spacing: -0.5px;
     }
-    .hero-desc { font-size: 0.9rem; color: var(--text-muted); margin: 0; max-width: 260px; line-height: 1.4; }
+    .hero-desc { font-size: 0.95rem; color: var(--text-muted); margin: 0; max-width: 280px; line-height: 1.5; }
 
-    .game-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-    .game-stat { background: var(--card-bg); padding: 6px 12px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; }
-    .timer-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
-    .timer-fill { height: 100%; background: var(--success); width: 100%; transition: width 0.1s linear, background-color 0.3s; }
+    /* Game Screen */
+    .game-header { display: flex; justify-content: space-between; margin-bottom: 24px; }
+    .game-stat {
+      background: var(--card-bg); padding: 8px 16px; border-radius: 14px;
+      font-size: 0.95rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.05);
+    }
+    .timer-bar {
+      height: 8px; background: rgba(255,255,255,0.1);
+      border-radius: 4px; margin-bottom: 30px; overflow: hidden;
+    }
+    .timer-fill {
+      height: 100%; background: var(--success); width: 100%;
+      transition: width 0.1s linear, background-color 0.3s;
+      border-radius: 4px;
+    }
     .timer-fill.warning { background: var(--gold); } .timer-fill.danger { background: var(--danger); }
 
     .coin-display {
-      width: 120px; height: 120px; margin: 0 auto 30px;
-      background: rgba(15,23,42,0.8); border-radius: 50%; padding: 15px;
-      border: 2px solid rgba(255,255,255,0.1);
-      box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
+      width: 130px; height: 130px; margin: 0 auto 35px;
+      background: rgba(15,23,42,0.8); border-radius: 50%; padding: 18px;
+      border: 3px solid rgba(255,255,255,0.08);
+      box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
       display: flex; align-items: center; justify-content: center; position: relative;
     }
     .coin-img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block; }
     #coinFallback { 
-      display: none; width: 90px; height: 90px; border-radius: 50%;
+      display: none; width: 100%; height: 100%; border-radius: 50%;
       align-items: center; justify-content: center;
-      font-size: 1.5rem; font-weight: 800; color: white;
-      background: linear-gradient(135deg, #6366f1, #a855f7);
-      border: 2px solid rgba(255,255,255,0.2);
+      font-size: 1.8rem; font-weight: 800; color: white;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
     }
     
     .score-popup {
-      position: absolute; top: -10px; right: -20px;
-      font-size: 1.5rem; font-weight: 900; color: var(--success);
+      position: absolute; top: -20px; right: -20px;
+      font-size: 1.8rem; font-weight: 900; color: var(--success);
       opacity: 0; pointer-events: none; z-index: 10;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
-    .score-popup.pop { animation: popUp 1s ease forwards; }
+    .score-popup.pop { animation: popUp 0.8s ease forwards; }
     
     .game-over-text {
         position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        font-size: 1.2rem; font-weight: 900; color: var(--danger);
-        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-        text-align: center;
-        display: none; z-index: 15;
-        background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 8px;
-        pointer-events: none;
+        font-size: 1.4rem; font-weight: 900; color: #fff;
+        background: var(--danger); padding: 8px 16px; border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+        display: none; z-index: 15; pointer-events: none; white-space: nowrap;
     }
 
-    @keyframes popUp { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 50% { transform: translateY(-20px) scale(1.2); } 100% { opacity: 0; transform: translateY(-40px) scale(1); } }
+    @keyframes popUp { 0% { opacity: 0; transform: translateY(10px) scale(0.8); } 20% { opacity: 1; transform: translateY(0) scale(1.1); } 100% { opacity: 0; transform: translateY(-30px) scale(1); } }
 
-    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
     .option-btn {
-      background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
-      color: white; padding: 16px 8px; border-radius: 12px;
-      font-size: 0.9rem; font-weight: 500; cursor: pointer;
-      transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1);
+      color: white; padding: 18px 10px; border-radius: 16px;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+      transition: all 0.15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .option-btn.correct { background: var(--success); color: #022c22; border-color: var(--success); }
+    .option-btn:active { transform: scale(0.98); }
+    .option-btn.correct { background: var(--success); color: #fff; border-color: var(--success); box-shadow: 0 0 20px rgba(34, 197, 94, 0.4); }
     .option-btn.wrong { background: var(--danger); border-color: var(--danger); opacity: 0.8; }
-    .option-btn:disabled { opacity: 0.7; cursor: default; }
+    .option-btn:disabled { opacity: 0.6; cursor: default; }
 
-    .jokers-area { display: flex; gap: 10px; margin-top: auto; }
+    .jokers-area { display: flex; gap: 12px; margin-top: auto; }
     .joker-btn {
-      flex: 1; background: rgba(15,23,42,0.8); border: 1px solid var(--accent);
-      color: var(--text); padding: 10px; border-radius: 10px;
-      font-size: 0.8rem; display: flex; align-items: center; justify-content: center;
-      gap: 6px; cursor: pointer; opacity: 0.5;
+      flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text); padding: 14px; border-radius: 16px;
+      font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center;
+      gap: 8px; cursor: pointer; transition: background 0.2s;
     }
-    .joker-btn.active { opacity: 1; background: rgba(139, 92, 246, 0.2); }
-    .joker-btn.used { opacity: 0.3; filter: grayscale(1); cursor: default; }
+    .joker-btn span { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 6px; font-size: 0.75rem; }
+    .joker-btn.active { background: rgba(139, 92, 246, 0.15); border-color: var(--primary); color: var(--primary); }
+    .joker-btn.used { opacity: 0.4; filter: grayscale(1); cursor: default; }
 
-    /* --- Leaderboard Filters --- */
+    /* --- Quest & Badges --- */
+    .quest-card {
+      background: linear-gradient(135deg, rgba(30,41,59,0.6), rgba(15,23,42,0.8));
+      border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 20px; padding: 20px; margin-bottom: 24px;
+    }
+    .quest-profiles { display: flex; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
+    .profile-chip {
+      background: rgba(139, 92, 246, 0.1); padding: 8px 14px;
+      border-radius: 20px; font-size: 0.8rem; color: #a5b4fc; font-weight: 600;
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      display: flex; align-items: center; gap: 6px;
+      text-decoration: none; transition: background 0.2s; cursor: pointer;
+    }
+    .profile-chip:hover { background: rgba(139, 92, 246, 0.2); }
+    .profile-chip.winner { border-color: var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.1); }
+    
+    .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
+    .badge-item {
+      background: rgba(255,255,255,0.03); border-radius: 16px; padding: 16px 8px;
+      text-align: center; opacity: 0.4; border: 1px solid rgba(255,255,255,0.05);
+      position: relative; display: flex; flex-direction: column; align-items: center;
+      min-height: 120px; transition: opacity 0.2s;
+    }
+    .badge-item.can-claim { opacity: 1; border-color: var(--primary); box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
+    .badge-item.owned { opacity: 1; border-color: var(--gold); background: radial-gradient(circle, rgba(251, 191, 36, 0.05) 0%, transparent 70%); }
+    .badge-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+    .badge-name { font-size: 0.7rem; font-weight: 700; line-height: 1.2; }
+    .badge-desc { font-size: 0.6rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* --- Leaderboard --- */
     .lb-filters { 
-        display:flex; gap:10px; margin-bottom: 15px; 
+        display:flex; gap:12px; margin-bottom: 20px; 
         position: relative; z-index: 30; 
     }
     .lb-btn { 
-      flex: 1; padding: 12px; font-size: 0.85rem; 
-      background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
-      color: var(--text-muted); border-radius: 8px; cursor: pointer;
+      flex: 1; padding: 14px; font-size: 0.9rem; font-weight: 600;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-muted); border-radius: 14px; cursor: pointer;
       transition: all 0.2s ease;
     }
-    .lb-btn:active { transform: scale(0.95); }
-    .lb-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: bold; }
+    .lb-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
     .list-item {
-      background: var(--card-bg); border-radius: 12px; padding: 12px;
-      margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+      background: rgba(30, 41, 59, 0.6); border-radius: 16px; padding: 16px;
+      margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
       border: 1px solid rgba(255,255,255,0.05);
     }
-    .list-rank { width: 24px; font-weight: bold; color: var(--gold); }
-    .list-user { flex: 1; padding: 0 10px; font-size: 0.9rem; }
-    .list-score { font-weight: bold; color: var(--primary); }
-
-    /* --- Quest & Badges --- */
-    .quest-card { background: linear-gradient(to right, rgba(15,23,42,0.9), rgba(30,41,59,0.9)); border: 1px solid var(--primary); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-    .quest-profiles { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
-    .profile-chip {
-      background: rgba(99, 102, 241, 0.2); padding: 6px 12px;
-      border-radius: 20px; font-size: 0.75rem; color: #a5b4fc;
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      display: flex; align-items: center; gap: 4px;
-      text-decoration: none; transition: background 0.2s; cursor: pointer;
-    }
-    .profile-chip:hover { background: rgba(99, 102, 241, 0.4); }
-    .profile-chip.winner { border-color: var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.15); }
-    
-    .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-    .badge-item {
-      background: rgba(0,0,0,0.3); border-radius: 10px; padding: 12px 5px;
-      text-align: center; opacity: 0.5; border: 1px solid rgba(255,255,255,0.05);
-      position: relative; display: flex; flex-direction: column; align-items: center;
-      min-height: 110px;
-    }
-    .badge-item.can-claim { opacity: 1; border-color: var(--primary); box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); animation: pulseBorder 2s infinite; }
-    .badge-item.owned { opacity: 1; border-color: var(--gold); background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, rgba(0,0,0,0) 70%); }
-    @keyframes pulseBorder { 0% { border-color: var(--primary); } 50% { border-color: white; } 100% { border-color: var(--primary); } }
-    .badge-icon { font-size: 1.8rem; margin-bottom: 6px; display: block; }
-    .badge-name { font-size: 0.65rem; font-weight: bold; }
-    .badge-desc { font-size: 0.55rem; color: var(--text-muted); margin-top: 2px; }
+    .list-rank { width: 28px; font-weight: 800; color: var(--gold); font-size: 1rem; }
+    .list-user { flex: 1; padding: 0 12px; font-size: 0.95rem; font-weight: 500; }
+    .list-score { font-weight: 800; color: var(--accent); }
 
     /* --- Fixed Navbar --- */
     .nav-bar {
-      display: flex; background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(255,255,255,0.1); justify-content: space-around; 
+      display: flex; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.08); justify-content: space-around; 
       z-index: 999; position: fixed; bottom: 0; left: 0; width: 100%;
       padding-bottom: env(safe-area-inset-bottom, 20px); height: auto; min-height: var(--nav-height);
-      box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
     }
     .nav-item {
-      background: none; border: none; color: var(--text-muted); font-size: 0.75rem;
-      display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 10px;
+      background: none; border: none; color: #64748b; font-size: 0.7rem; font-weight: 600;
+      display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer;
+      padding: 12px 20px; transition: color 0.2s;
     }
-    .nav-item svg { width: 24px; height: 24px; fill: currentColor; } .nav-item.active { color: var(--primary); }
+    .nav-item svg { width: 26px; height: 26px; fill: currentColor; transition: transform 0.2s; }
+    .nav-item.active { color: var(--primary); }
+    .nav-item.active svg { transform: translateY(-2px); }
 
-    /* --- Modal --- */
-    .overlay { position: fixed; inset:0; background: rgba(0,0,0,0.85); z-index: 2000; }
-    
+    /* --- Result Modal --- */
+    .overlay { position: fixed; inset:0; background: rgba(0,0,0,0.9); z-index: 2000; backdrop-filter: blur(5px); }
     .result-modal {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: #0f172a; border: 1px solid var(--primary);
-      padding: 30px; border-radius: 24px; z-index: 2001;
+      background: linear-gradient(145deg, #1e1b4b, #0f172a); 
+      border: 1px solid var(--primary);
+      padding: 32px; border-radius: 32px; z-index: 2001;
       text-align: center; width: 85%; max-width: 350px;
-      box-shadow: 0 0 50px rgba(99, 102, 241, 0.5);
+      box-shadow: 0 0 80px rgba(139, 92, 246, 0.4);
       display: flex; flex-direction: column; align-items: center;
-      animation: scaleUp 0.3s ease-out;
+      animation: scaleUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    @keyframes scaleUp { from { transform: translate(-50%, -40%) scale(0.9); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
-
-    .res-title { font-size: 1.8rem; font-weight: 800; color: var(--danger); margin-bottom: 10px; }
-    .res-score { font-size: 3rem; font-weight: 900; color: white; margin: 10px 0; text-shadow: 0 0 20px var(--primary); }
-    .res-label { color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
-    .res-best { margin-top: 5px; font-size: 0.9rem; color: var(--gold); background: rgba(251, 191, 36, 0.1); padding: 4px 12px; border-radius: 12px; }
+    @keyframes scaleUp { from { transform: translate(-50%, -40%) scale(0.8); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+    .res-title { font-size: 2rem; font-weight: 900; color: var(--danger); margin-bottom: 8px; letter-spacing: -1px; text-transform: uppercase; }
+    .res-label { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+    .res-score { font-size: 4rem; font-weight: 900; color: white; margin: 4px 0; text-shadow: 0 0 30px rgba(139, 92, 246, 0.6); line-height: 1; }
+    .res-best { margin-top: 12px; font-size: 0.95rem; color: var(--gold); background: rgba(251, 191, 36, 0.15); padding: 6px 16px; border-radius: 20px; font-weight: 700; }
     
     .hidden { display: none !important; }
-    .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+    .loader { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
@@ -325,7 +348,8 @@
 <div class="app-container">
   <header class="header">
     <div class="brand">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg> Icon Master
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+      Icon Master
     </div>
     <div class="personal-best">Best: <span id="displayBestScore">0</span></div>
   </header>
@@ -378,11 +402,13 @@
     <div id="screen-quests" class="screen">
       <h2 style="margin-top: 0;">Joker Activation</h2>
       <div class="quest-card">
-        <div style="font-weight: bold; margin-bottom: 8px; font-size: 0.9rem;">Required Follows</div>
+        <div style="font-weight: bold; margin-bottom: 12px; font-size: 0.95rem;">Required Follows</div>
         <div class="quest-profiles" id="quest-profiles-container"></div>
-        <div style="font-size: 0.75rem; margin: 10px 0; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px;">Includes <b>Daily Winner</b> (UTC+3)</div>
-        <button class="btn-main" id="btnVerifyQuest" style="font-size: 0.9rem; padding: 10px;" onclick="verifyQuest()">Verify Follows & Unlock</button>
-        <div id="questTimer" style="text-align: center; font-size: 0.8rem; color: var(--success); margin-top: 5px; display: none; font-weight: bold;">✅ Active!</div>
+        <div style="font-size: 0.75rem; margin: 12px 0; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
+          Includes <b>Daily Winner</b>
+        </div>
+        <button class="btn-main" id="btnVerifyQuest" style="font-size: 0.9rem; padding: 12px;" onclick="verifyQuest()">Verify Follows & Unlock</button>
+        <div id="questTimer" style="text-align: center; font-size: 0.9rem; color: var(--success); margin-top: 5px; display: none; font-weight: bold;">✅ Active!</div>
       </div>
       <h3>Achievements</h3>
       <div class="badge-grid" id="badgesContainer"></div>
@@ -394,10 +420,9 @@
         <button id="lbBtnDaily" class="lb-btn active" onclick="renderLeaderboard('daily')">Daily</button>
         <button id="lbBtnAll" class="lb-btn" onclick="renderLeaderboard('alltime')">All Time</button>
       </div>
-      <div style="background: rgba(99, 102, 241, 0.1); padding: 10px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 15px; border: 1px solid rgba(99, 102, 241, 0.3);">
-        🏆 The #1 Daily player (UTC+3) is featured in the Quest list for 24h!
+      <div style="background: rgba(99, 102, 241, 0.1); padding: 14px; border-radius: 16px; font-size: 0.85rem; margin-bottom: 20px; border: 1px solid rgba(99, 102, 241, 0.3); line-height: 1.4;">
+        🏆 The <b>#1 Daily player</b> (UTC+3) is featured in the Quest list for 24h!
       </div>
-      <div style="text-align: center; font-size: 0.7rem; color: #64748b; margin-bottom: 10px;">* Global ranking requires database. Current list is simulation.</div>
       <div id="lb-list"></div>
     </div>
   </div>
@@ -417,12 +442,11 @@
   <div class="res-label">FINAL SCORE</div>
   <div class="res-score" id="resScoreVal">0</div>
   <div class="res-best">🏆 Personal Best: <span id="resBestVal">0</span></div>
-  <button class="btn-main" style="margin-top: 25px; width: 100%;" onclick="restartGame()">🔄 Play Again</button>
-  <button class="btn-secondary" onclick="closeModal()">Home</button>
+  <button class="btn-main" style="margin-top: 30px; width: 100%;" onclick="restartGame()">🔄 Play Again</button>
+  <button class="btn-secondary" onclick="closeModal()">Main Menu</button>
 </div>
 
 <script>
-// --- CONFIG ---
 const CONTRACT_ADDRESS = "0x5827273795C64E328D8F27B5e8DDB2E4187b1dA6"; 
 const CONFIG = { totalTime: 7000, baseChainId: '8453' };
 const MINIMAL_ABI = ["function mint(uint256 id, uint256 amount) public"];
@@ -529,78 +553,6 @@ const COIN_DB = [
   {id: "stormx", symbol: "stmx", name: "StormX", img: "https://assets.coingecko.com/coins/images/208/large/stormx.jpg"},
   {id: "status", symbol: "snt", name: "Status", img: "https://assets.coingecko.com/coins/images/779/large/status.png"},
   {id: "numeraire", symbol: "nmr", name: "Numeraire", img: "https://assets.coingecko.com/coins/images/752/large/numeraire.png"},
-  {id: "orchid-protocol", symbol: "oxt", name: "Orchid", img: "https://assets.coingecko.com/coins/images/10168/large/orchid.png"},
-  {id: "prometeus", symbol: "prom", name: "Prom", img: "https://assets.coingecko.com/coins/images/8470/large/prom.png"},
-  {id: "aelf", symbol: "elf", name: "aelf", img: "https://assets.coingecko.com/coins/images/1371/large/aelf-logo.png"},
-  {id: "request-network", symbol: "req", name: "Request", img: "https://assets.coingecko.com/coins/images/1070/large/req.png"},
-  {id: "ark", symbol: "ark", name: "Ark", img: "https://assets.coincap.io/assets/icons/ark@2x.png"},
-  {id: "strax", symbol: "strax", name: "Stratis", img: "https://assets.coingecko.com/coins/images/13098/large/strax.png"},
-  {id: "verge", symbol: "xvg", name: "Verge", img: "https://assets.coingecko.com/coins/images/61/large/verge.png"},
-  {id: "metal", symbol: "mtl", name: "Metal", img: "https://assets.coingecko.com/coins/images/765/large/metal.png"},
-  {id: "ardor", symbol: "ardr", name: "Ardor", img: "https://assets.coingecko.com/coins/images/557/large/ardor.png"},
-  {id: "loom-network", symbol: "loom", name: "Loom Network", img: "https://assets.coingecko.com/coins/images/3103/large/Loom.png"},
-  {id: "rif-token", symbol: "rif", name: "RSK Infrastructure Framework", img: "https://assets.coingecko.com/coins/images/7454/large/RIF.png"},
-  {id: "tomochain", symbol: "tomo", name: "TomoChain", img: "https://assets.coingecko.com/coins/images/2819/large/logo-tomochain-200.png"},
-  {id: "quarkchain", symbol: "qkc", name: "QuarkChain", img: "https://assets.coingecko.com/coins/images/4340/large/QurakChain.png"},
-  {id: "thunder-token", symbol: "tt", name: "ThunderCore", img: "https://assets.coingecko.com/coins/images/8488/large/thundercore.png"},
-  {id: "iris-network", symbol: "iris", name: "IRISnet", img: "https://assets.coincap.io/assets/icons/iris@2x.png"},
-  {id: "marlin", symbol: "pond", name: "Marlin", img: "https://assets.coincap.io/assets/icons/pond@2x.png"},
-  {id: "akropolis", symbol: "akro", name: "Akropolis", img: "https://assets.coingecko.com/coins/images/7473/large/akropolis.png"},
-  {id: "dia-data", symbol: "dia", name: "DIA", img: "https://assets.coingecko.com/coins/images/11955/large/dia.png"},
-  {id: "dock", symbol: "dock", name: "Dock", img: "https://assets.coingecko.com/coins/images/3719/large/dock-new.png"},
-  {id: "pundix-new", symbol: "pundix", name: "Pundi X", img: "https://assets.coingecko.com/coins/images/14589/large/pundix.png"},
-  {id: "wanchain", symbol: "wan", name: "Wanchain", img: "https://assets.coingecko.com/coins/images/3358/large/wanchain-logo.png"},
-  {id: "cortex", symbol: "ctxc", name: "Cortex", img: "https://assets.coingecko.com/coins/images/3757/large/Cortex.png"},
-  {id: "lto-network", symbol: "lto", name: "LTO Network", img: "https://assets.coingecko.com/coins/images/7533/large/lto-logo.png"},
-  {id: "fio-protocol", symbol: "fio", name: "FIO Protocol", img: "https://assets.coingecko.com/coins/images/11822/large/FIO_Token_Logo.png"},
-  {id: "aergo", symbol: "aergo", name: "Aergo", img: "https://assets.coingecko.com/coins/images/4489/large/aergo.png"},
-  {id: "steem", symbol: "steem", name: "Steem", img: "https://assets.coingecko.com/coins/images/303/large/steem.png"},
-  {id: "syscoin", symbol: "sys", name: "Syscoin", img: "https://assets.coincap.io/assets/icons/sys@2x.png"},
-  {id: "komodo", symbol: "kmd", name: "Komodo", img: "https://assets.coingecko.com/coins/images/611/large/KMD_Mark_Color.png"},
-  {id: "bluzelle", symbol: "blz", name: "Bluzelle", img: "https://assets.coincap.io/assets/icons/blz@2x.png"},
-  {id: "data", symbol: "dta", name: "DATA", img: "https://assets.coingecko.com/coins/images/2627/large/data.png"},
-  {id: "propy", symbol: "pro", name: "Propy", img: "https://assets.coingecko.com/coins/images/735/large/propy.png"},
-  {id: "covalent", symbol: "cqt", name: "Covalent", img: "https://assets.coingecko.com/coins/images/15473/large/covalent.png"},
-  {id: "ampleforth", symbol: "ampl", name: "Ampleforth", img: "https://assets.coingecko.com/coins/images/8776/large/Ampleforth_rebrand_logo.png"},
-  {id: "verasity", symbol: "vra", name: "Verasity", img: "https://assets.coincap.io/assets/icons/vra@2x.png"},
-  {id: "alien-worlds", symbol: "tlm", name: "Alien Worlds", img: "https://assets.coingecko.com/coins/images/14710/large/tlm.png"},
-  {id: "aurora-near", symbol: "aurora", name: "Aurora", img: "https://assets.coingecko.com/coins/images/20593/large/aurora.jpeg"},
-  {id: "pivx", symbol: "pivx", name: "PIVX", img: "https://assets.coincap.io/assets/icons/pivx@2x.png"},
-  {id: "ad-shares", symbol: "ads", name: "Adshares", img: "https://assets.coingecko.com/coins/images/4962/large/ADS_Logotype_Blue.png"},
-  {id: "polkastarter", symbol: "pols", name: "Polkastarter", img: "https://assets.coingecko.com/coins/images/12648/large/polkastarter.png"},
-  {id: "energy-web-token", symbol: "ewt", name: "Energy Web", img: "https://assets.coingecko.com/coins/images/10636/large/Energy_Web.png"},
-  {id: "telos", symbol: "tlos", name: "Telos", img: "https://assets.coingecko.com/coins/images/7588/large/tlos.png"},
-  {id: "constellation-labs", symbol: "dag", name: "Constellation", img: "https://assets.coingecko.com/coins/images/4645/large/DAG.png"},
-  {id: "orbs", symbol: "orbs", name: "Orbs", img: "https://assets.coingecko.com/coins/images/8133/large/Orbs.png"},
-  {id: "bancor", symbol: "bnt", name: "Bancor Network", img: "https://assets.coingecko.com/coins/images/736/large/bancor.png"},
-  {id: "celsius-degree-token", symbol: "cel", name: "Celsius", img: "https://assets.coingecko.com/coins/images/3263/large/CEL.png"},
-  {id: "quarkchain", symbol: "qkc", name: "QuarkChain", img: "https://assets.coingecko.com/coins/images/4340/large/QurakChain.png"},
-  {id: "singularitydao", symbol: "sdao", name: "SingularityDAO", img: "https://assets.coingecko.com/coins/images/15452/large/sdao.png"},
-  {id: "rally-2", symbol: "rly", name: "Rally", img: "https://assets.coingecko.com/coins/images/12843/large/rly.png"},
-  {id: "persistence", symbol: "xprt", name: "Persistence", img: "https://assets.coingecko.com/coins/images/14467/large/xprt.png"},
-  {id: "verus-coin", symbol: "vrsc", name: "Verus Coin", img: "https://assets.coingecko.com/coins/images/4447/large/verus.png"},
-  {id: "kleros", symbol: "pnk", name: "Kleros", img: "https://assets.coingecko.com/coins/images/4183/large/kleros_symbol.png"},
-  {id: "quarkchain", symbol: "qkc", name: "QuarkChain", img: "https://assets.coingecko.com/coins/images/4340/large/QurakChain.png"},
-  {id: "utrust", symbol: "utk", name: "xMoney", img: "https://assets.coingecko.com/coins/images/1435/large/utk.png"},
-  {id: "adventure-gold", symbol: "agld", name: "Adventure Gold", img: "https://assets.coingecko.com/coins/images/18165/large/agld.png"},
-  {id: "gods-unchained", symbol: "gods", name: "Gods Unchained", img: "https://assets.coingecko.com/coins/images/19441/large/gods.png"},
-  {id: "radworks", symbol: "rad", name: "Radworks", img: "https://assets.coingecko.com/coins/images/15456/large/rad.png"},
-  {id: "badger-dao", symbol: "badger", name: "Badger DAO", img: "https://assets.coingecko.com/coins/images/13292/large/badger.png"},
-  {id: "rif-token", symbol: "rif", name: "RIF", img: "https://assets.coingecko.com/coins/images/7454/large/RIF.png"},
-  {id: "ergo", symbol: "erg", name: "Ergo", img: "https://assets.coingecko.com/coins/images/2484/large/ergo-logo.png"},
-  {id: "lisk", symbol: "lsk", name: "Lisk", img: "https://assets.coingecko.com/coins/images/385/large/Lisk_Symbol_Blue.png"},
-  {id: "nano", symbol: "xno", name: "Nano", img: "https://assets.coingecko.com/coins/images/756/large/nano.png"},
-  {id: "banano", symbol: "ban", name: "Banano", img: "https://assets.coingecko.com/coins/images/4706/large/banano.png"},
-  {id: "firo", symbol: "firo", name: "Firo", img: "https://assets.coingecko.com/coins/images/623/large/Firo.png"},
-  {id: "groestlcoin", symbol: "grs", name: "Groestlcoin", img: "https://assets.coingecko.com/coins/images/563/large/groestlcoin.png"},
-  {id: "beam-2", symbol: "beam", name: "Beam", img: "https://assets.coingecko.com/coins/images/32329/large/beam.png"},
-  {id: "grin", symbol: "grin", name: "Grin", img: "https://assets.coingecko.com/coins/images/7552/large/grin.png"},
-  {id: "monacoin", symbol: "mona", name: "MonaCoin", img: "https://assets.coincap.io/assets/icons/mona@2x.png"},
-  {id: "reddcoin", symbol: "rdd", name: "ReddCoin", img: "https://assets.coingecko.com/coins/images/219/large/reddcoin.png"},
-  {id: "vertcoin", symbol: "vtc", name: "Vertcoin", img: "https://assets.coincap.io/assets/icons/vtc@2x.png"},
-  {id: "namecoin", symbol: "nmc", name: "Namecoin", img: "https://assets.coingecko.com/coins/images/315/large/namecoin.png"},
-  {id: "peercoin", symbol: "ppc", name: "Peercoin", img: "https://assets.coingecko.com/coins/images/409/large/peercoin.png"},
-  {id: "primecoin", symbol: "xpm", name: "Primecoin", img: "https://assets.coingecko.com/coins/images/526/large/primecoin.png"},
   {id: "feathercoin", symbol: "ftc", name: "Feathercoin", img: "https://assets.coingecko.com/coins/images/373/large/feathercoin.png"}
 ];
 
@@ -618,7 +570,7 @@ function handleImageError(img) {
 let state = {
   score: 0, totalPoints: 0, totalGames: 0, jokersUsed: 0, bestScore: 0,
   jokersUnlockedUntil: 0, claimedBadges: [], 
-  lastWeekWinners: ["@crypto_guru", "@nft_whale"],
+  lastWeekWinners: ["@crypto_guru", "@nft_whale"], // Placeholder fallback
   history: [{user: "@ayktbyr", score: 150, date: Date.now()-10000}]
 };
 let currentCoin, currentOptions, gameTimer, timerStart;
@@ -631,9 +583,9 @@ let isSessionActive = false;
 
 if(window.initGame) window.initGame();
 
-function saveState() { localStorage.setItem('iconMasterV22', JSON.stringify(state)); updateUI(); checkBadges(); }
+function saveState() { localStorage.setItem('iconMasterV23', JSON.stringify(state)); updateUI(); checkBadges(); }
 function loadState() {
-  const saved = localStorage.getItem('iconMasterV22');
+  const saved = localStorage.getItem('iconMasterV23');
   if (saved) state = {...state, ...JSON.parse(saved)};
   if(!state.claimedBadges) state.claimedBadges = [];
   if(!state.lastWeekWinners) state.lastWeekWinners = ["@crypto_guru", "@nft_whale"];
@@ -647,7 +599,6 @@ function navTo(screenName) {
   if(screenName === 'quests') { updateQuestLeaders(); renderBadges(); }
 }
 
-// START GAME (Check Wallet & Network)
 async function startGameFlow() {
   if (isSessionActive) {
       launchGame();
@@ -664,20 +615,19 @@ async function startGameFlow() {
     } else if (window.ethereum) {
       provider = new ethers.BrowserProvider(window.ethereum, "any");
     } else {
-      throw new Error("Wallet not found.");
+      throw new Error("No wallet found.");
     }
     
-    // Auto-switch network
     try { await provider.send("wallet_switchEthereumChain", [{ chainId: "0x2105" }]); } catch(e){}
 
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
     
-    // REAL TX to verify/start (0 ETH) - Added Gas Limit to fix Estimation Error
+    // REAL TX to verify/start (0 ETH) with increased Gas Limit to prevent failure
     const tx = { 
       to: await signer.getAddress(), 
       value: 0,
-      gasLimit: 25000 // FIX: Force gas limit to skip estimation
+      gasLimit: 25000 
     }; 
     await signer.sendTransaction(tx);
     
@@ -703,7 +653,6 @@ function launchGame() {
 
 function restartGame() {
     closeModal();
-    // Direct launch without TX if session is active
     launchGame(); 
 }
 
@@ -843,13 +792,18 @@ function updateQuestLeaders() {
     <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/ayktbyr')" class="profile-chip">@ayktbyr</div>
     <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/atmacxa')" class="profile-chip">@atmacxa</div>`;
     
+    // Add daily winner if available
     if (state.lastWeekWinners && Array.isArray(state.lastWeekWinners)) {
-       state.lastWeekWinners.forEach(user => {
+       // Only take the first one as the "Daily Winner"
+       const winner = state.lastWeekWinners[0];
+       if(winner) {
            const chip = document.createElement('div');
-           chip.className = 'profile-chip';
-           chip.innerText = user;
+           chip.className = 'profile-chip winner';
+           chip.innerHTML = `👑 ${winner}`;
+           // Optional click handler
+           chip.onclick = function() { if(window.sdk) window.sdk.actions.openUrl(`https://warpcast.com/${winner.replace('@','')}`); };
            container.appendChild(chip);
-       });
+       }
     }
 }
 function updateUI() {
@@ -863,7 +817,6 @@ function closeModal() {
     navTo('home'); 
 }
 
-// ON-CHAIN MINT
 async function claimBadge(id) {
   if(state.claimedBadges.includes(id)) return;
   if(CONTRACT_ADDRESS.length < 40) { alert("Contract address missing."); return; }
@@ -874,7 +827,6 @@ async function claimBadge(id) {
     const signer = await provider.getSigner();
     const contract = new ethers.Contract(CONTRACT_ADDRESS, MINIMAL_ABI, signer);
     
-    // Added gasLimit to fix estimation error
     const tx = await contract.mint(BADGE_ID_MAP[id], 1, { gasLimit: 150000 });
     console.log("Mint TX:", tx.hash);
     
@@ -887,10 +839,99 @@ async function claimBadge(id) {
   }
 }
 
-function checkBadges() { /* logic same */ }
-function renderBadges() { /* logic same */ }
-function renderLeaderboard(filter) { /* logic same */ }
+function checkBadges() { 
+  // Only check score/game based badges. Rank badges require global DB.
+  if(state.totalGames >= 5 && !state.claimedBadges.includes('games_5')) { /* logic to show notification */ }
+}
+function renderBadges() {
+  const container = document.getElementById('badgesContainer');
+  container.innerHTML = '';
+  
+  BADGE_DEFS.forEach(badge => {
+    let conditionMet = false;
+    // Logic for local conditions
+    if (badge.type === 'games' && state.totalGames >= badge.target) conditionMet = true;
+    if (badge.type === 'highScore' && state.bestScore >= badge.target) conditionMet = true;
+    if (badge.type === 'jokers' && state.jokersUsed >= badge.target) conditionMet = true;
 
+    const isClaimed = state.claimedBadges.includes(badge.id);
+    const div = document.createElement('div');
+    div.id = `badge-${badge.id}`;
+    
+    let stateClass = '';
+    let actionHtml = '';
+
+    if (isClaimed) {
+      stateClass = 'owned';
+      actionHtml = '<div class="claimed-tag">OWNED</div>';
+    } else if (conditionMet) {
+      stateClass = 'can-claim';
+      actionHtml = `<button class="claim-btn" onclick="claimBadge('${badge.id}')">MINT</button>`;
+    }
+
+    div.className = `badge-item ${stateClass}`;
+    div.innerHTML = `
+      <span class="badge-icon">${badge.icon}</span>
+      <div class="badge-name">${badge.title}</div>
+      <div class="badge-desc">${badge.desc}</div>
+      ${actionHtml}
+    `;
+    container.appendChild(div);
+  });
+}
+function renderLeaderboard(filter) {
+  const btnDaily = document.getElementById('lbBtnDaily');
+  const btnAll = document.getElementById('lbBtnAll');
+  
+  if(filter === 'daily') {
+      btnDaily.classList.add('active');
+      btnAll.classList.remove('active');
+  } else {
+      btnAll.classList.add('active');
+      btnDaily.classList.remove('active');
+  }
+
+  const list = document.getElementById('lb-list');
+  list.innerHTML = '';
+
+  let data = [...state.history];
+  
+  if (filter === 'daily') {
+    const startOfDay = new Date();
+    startOfDay.setHours(0,0,0,0);
+    data = data.filter(item => item.date > startOfDay.getTime());
+  }
+
+  data.sort((a,b) => b.score - a.score);
+  
+  // Unique Users Logic (Show only best score per user)
+  const seenUsers = new Set();
+  const uniqueData = [];
+  data.forEach(item => {
+    if(!seenUsers.has(item.user)) {
+      seenUsers.add(item.user);
+      uniqueData.push(item);
+    }
+  });
+
+  const finalData = uniqueData.slice(0, 20);
+
+  if (finalData.length === 0) {
+    list.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">No games played yet!</div>';
+    return;
+  }
+
+  finalData.forEach((item, index) => {
+    const row = document.createElement('div');
+    row.className = 'list-item';
+    row.innerHTML = `
+      <div class="list-rank">${index + 1}</div>
+      <div class="list-user">${item.user}</div>
+      <div class="list-score">${item.score} pts</div>
+    `;
+    list.appendChild(row);
+  });
+}
 </script>
 </body>
 </html>
