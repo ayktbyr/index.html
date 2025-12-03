@@ -863,13 +863,12 @@
              console.error("Firebase save failed", e);
              if(statusEl) { 
                  // Translated errors for clarity
-                 if (e.code === 'permission-denied') {
-                    statusEl.innerText = "⚠️ Save Failed: Permission Denied (Check Rules)";
-                 } else if (e.code === 'unavailable') {
-                    statusEl.innerText = "⚠️ Save Failed: Network Error";
-                 } else {
-                    statusEl.innerText = "⚠️ Save Failed: " + (e.code || "Unknown Error"); 
-                 }
+                 let errText = "Unknown Error";
+                 if (e.code === 'permission-denied') errText = "Permission Denied (Check Rules)";
+                 else if (e.code === 'unavailable') errText = "Network Error";
+                 else if (e.message) errText = e.message;
+                 
+                 statusEl.innerText = "⚠️ Save Failed: " + errText;
                  statusEl.style.color = "#f87171"; 
              }
           }
@@ -877,6 +876,12 @@
     }
 
     async function saveScoreToFirebase(scoreVal) {
+      // Force Auth check
+      if (!auth.currentUser) {
+          console.log("Not signed in, attempting anonymous sign-in...");
+          await signInAnonymously(auth);
+      }
+
       let username = "Anonymous";
       
       try {
@@ -889,7 +894,9 @@
                 username = u.fid.toString();
             }
         } else {
+             // Fallback for non-farcaster environment
              username = "User" + Math.floor(Math.random()*1000);
+             console.log("No Farcaster context found, using random username:", username);
         }
       } catch (err) {
         console.warn("Error getting user context, using fallback", err);
