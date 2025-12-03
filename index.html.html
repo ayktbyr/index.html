@@ -408,7 +408,7 @@
         <button id="lbBtnAll" class="lb-btn" onclick="renderLeaderboard('alltime')">All Time</button>
       </div>
       <div style="background: rgba(99, 102, 241, 0.1); padding: 14px; border-radius: 16px; font-size: 0.85rem; margin-bottom: 20px; border: 1px solid rgba(99, 102, 241, 0.3); line-height: 1.4;">
-        🏆 The <b>#1 Daily player</b> (UTC+3) is featured in the Quest list for 24h!
+        🏆 The <b>#1 Weekly player</b> (UTC+3) is featured in the Quest list for 24h!
       </div>
       <div id="lb-list">
         <div style="text-align:center; padding:20px; color:#aaa;">Loading...</div>
@@ -633,7 +633,7 @@
     let state = {
       score: 0, totalPoints: 0, totalGames: 0, jokersUsed: 0, bestScore: 0,
       jokersUnlockedUntil: 0, claimedBadges: [], 
-      lastWeekWinners: ["@crypto_guru", "@nft_whale"], // Placeholder fallback
+      lastWeekWinners: [], // Placeholder fallback removed
       history: [] // Not used for global leaderboard anymore, only local session history if needed
     };
     
@@ -659,7 +659,7 @@
       const saved = localStorage.getItem('iconMasterV23');
       if (saved) state = {...state, ...JSON.parse(saved)};
       if(!state.claimedBadges) state.claimedBadges = [];
-      if(!state.lastWeekWinners) state.lastWeekWinners = ["@crypto_guru", "@nft_whale"];
+      if(!state.lastWeekWinners) state.lastWeekWinners = [];
     }
 
     function navTo(screenName) {
@@ -969,16 +969,7 @@
         <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/atmacxa')" class="profile-chip">@atmacxa</div>`;
         
         // Add daily winner if available
-        if (state.lastWeekWinners && Array.isArray(state.lastWeekWinners)) {
-           const winner = state.lastWeekWinners[0];
-           if(winner) {
-               const chip = document.createElement('div');
-               chip.className = 'profile-chip winner';
-               chip.innerHTML = `👑 ${winner}`;
-               chip.onclick = function() { if(window.sdk) window.sdk.actions.openUrl(`https://warpcast.com/${winner.replace('@','')}`); };
-               container.appendChild(chip);
-           }
-        }
+        // REMOVED LOGIC TO ADD 3RD PLACEHOLDER AS REQUESTED
     }
     function updateUI() {
         document.getElementById('displayBestScore').innerText = state.bestScore;
@@ -1047,7 +1038,7 @@
           actionHtml = '<div class="claimed-tag">OWNED</div>';
         } else if (conditionMet) {
           stateClass = 'can-claim';
-          actionHtml = `<button class="claim-btn" onclick="claimBadge('${badge.id}')">MINT</button>`;
+          actionHtml = `<button class="claim-btn" onclick="claimBadge('${badge.id}')">CLAIM</button>`; // Changed to CLAIM
         }
 
         div.className = `badge-item ${stateClass}`;
