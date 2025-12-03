@@ -404,7 +404,7 @@
     <!-- LEADERBOARD -->
     <div id="screen-leaderboard" class="screen">
       <div class="lb-filters">
-        <button id="lbBtnDaily" class="lb-btn active" onclick="renderLeaderboard('daily')">Daily</button>
+        <button id="lbBtnWeekly" class="lb-btn active" onclick="renderLeaderboard('weekly')">Weekly</button>
         <button id="lbBtnAll" class="lb-btn" onclick="renderLeaderboard('alltime')">All Time</button>
       </div>
       <div style="background: rgba(99, 102, 241, 0.1); padding: 14px; border-radius: 16px; font-size: 0.85rem; margin-bottom: 20px; border: 1px solid rgba(99, 102, 241, 0.3); line-height: 1.4;">
@@ -422,17 +422,6 @@
     <button class="nav-item" onclick="navTo('quests')"><svg viewBox="0 0 24 24"><path d="M12 2L1 21h22M12 6l7.53 13H4.47"/></svg>Quests</button>
     <button class="nav-item" onclick="navTo('leaderboard')"><svg viewBox="0 0 24 24"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg>Rank</button>
   </nav>
-</div>
-
-<!-- RESULT MODAL -->
-<div class="overlay hidden" id="modalOverlay"></div>
-<div class="result-modal hidden" id="modalBox">
-  <div class="res-title">GAME OVER</div>
-  <div class="res-label">FINAL SCORE</div>
-  <div class="res-score" id="resScoreVal">0</div>
-  <div class="res-best">🏆 Personal Best: <span id="resBestVal">0</span></div>
-  <button class="btn-main" style="margin-top: 30px; width: 100%;" onclick="restartGame()">🔄 Play Again</button>
-  <button class="btn-secondary" onclick="closeModal()">Main Menu</button>
 </div>
 
 <!-- Standard Script for Immediate Global Access -->
@@ -650,7 +639,7 @@
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
       document.getElementById(`screen-${screenName}`).classList.add('active');
       
-      if(screenName === 'leaderboard') renderLeaderboard('daily');
+      if(screenName === 'leaderboard') renderLeaderboard('weekly'); // Changed to weekly
       if(screenName === 'quests') { updateQuestLeaders(); renderBadges(); }
     }
 
@@ -830,9 +819,10 @@
                 score: state.score,
                 timestamp: Date.now()
             });
-            console.log("Score saved to Firebase");
+            console.log("Score saved to Firebase successfully"); // Added success log
         } catch (e) {
             console.error("Error saving score: ", e);
+            // Optionally alert the user in dev mode, but keep silent in prod
         }
       }
 
@@ -963,33 +953,30 @@
 
     // --- FIREBASE LEADERBOARD LOGIC ---
     async function renderLeaderboard(filter) {
-      const btnDaily = document.getElementById('lbBtnDaily');
+      const btnWeekly = document.getElementById('lbBtnWeekly'); // Changed variable name
       const btnAll = document.getElementById('lbBtnAll');
       const list = document.getElementById('lb-list');
       
-      if(filter === 'daily') {
-          btnDaily.classList.add('active');
+      if(filter === 'weekly') { // Changed filter logic
+          btnWeekly.classList.add('active');
           btnAll.classList.remove('active');
       } else {
           btnAll.classList.add('active');
-          btnDaily.classList.remove('active');
+          btnWeekly.classList.remove('active');
       }
 
       list.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;"><div class="loader" style="margin:0 auto;"></div></div>';
 
       try {
-          // Fetch Top 50 scores (Descending Order)
-          // Note: To filter by date in the query AND order by score, Firestore needs a composite index.
-          // To keep it simple for now, we fetch top 50 global, and filter for daily in JS if needed.
-          const q = query(collection(db, "scores"), orderBy("score", "desc"), limit(50));
+          // Fetch Top 100 scores (Increased limit to catch more weekly players in the pool)
+          const q = query(collection(db, "scores"), orderBy("score", "desc"), limit(100));
           const snapshot = await getDocs(q);
           
           let data = snapshot.docs.map(doc => doc.data());
 
-          if (filter === 'daily') {
-            const startOfDay = new Date();
-            startOfDay.setHours(0,0,0,0);
-            data = data.filter(item => item.timestamp > startOfDay.getTime());
+          if (filter === 'weekly') { // Updated to Weekly
+            const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7 Days in ms
+            data = data.filter(item => item.timestamp > oneWeekAgo);
           }
 
           // Unique Users Logic (Show only best score per user)
