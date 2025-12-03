@@ -878,18 +878,34 @@
 
     async function saveScoreToFirebase(scoreVal) {
       let username = "Anonymous";
-      if (window.sdk && window.sdk.context && window.sdk.context.user) {
-          username = window.sdk.context.user.username || window.sdk.context.user.fid;
-      } else {
-           username = "User" + Math.floor(Math.random()*1000);
+      
+      try {
+        // Safe extraction of user data
+        if (window.sdk && window.sdk.context && window.sdk.context.user) {
+            const u = window.sdk.context.user;
+            if (u.username) {
+                username = u.username;
+            } else if (u.fid) {
+                username = u.fid.toString();
+            }
+        } else {
+             username = "User" + Math.floor(Math.random()*1000);
+        }
+      } catch (err) {
+        console.warn("Error getting user context, using fallback", err);
       }
 
-      // We attempt to save. If permissions/auth fail, the catch block in endGame handles it.
-      await addDoc(collection(db, "scores"), {
-          user: username,
-          score: scoreVal,
+      // Final Sanity Check - Firestore throws "invalid-argument" if a field is undefined
+      const safeData = {
+          user: String(username || "Anonymous"),
+          score: Number(scoreVal) || 0,
           timestamp: Date.now()
-      });
+      };
+
+      console.log("Attempting to save:", safeData);
+
+      // We attempt to save. If permissions/auth fail, the catch block in endGame handles it.
+      await addDoc(collection(db, "scores"), safeData);
       console.log("✅ Score saved to Firebase successfully");
     }
 
