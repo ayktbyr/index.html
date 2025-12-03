@@ -882,56 +882,58 @@
           await signInAnonymously(auth);
       }
 
-      let safeUsername = "Anonymous";
-      
+      let finalUsername = "Anonymous";
+
       try {
-        // Retrieve context using the imported 'sdk' variable
-        // In newer frame SDKs, context might be a property or a promise.
-        // We'll handle it defensively.
-        let context = sdk.context;
-        
-        // If context is a Promise, await it
-        if (context instanceof Promise) {
-            context = await context;
-        }
+          // 1. SDK Context Retrieval
+          let context = null;
+          if (window.sdk && window.sdk.context) context = window.sdk.context;
+          if (!context && typeof sdk !== 'undefined' && sdk.context) context = sdk.context;
+          
+          // Handle Promise context (newer SDKs)
+          if (context && typeof context.then === 'function') {
+              context = await context;
+          }
 
-        if (context && context.user) {
-            const u = context.user;
-            if (u.username) {
-                safeUsername = u.username;
-            } else if (u.fid) {
-                safeUsername = String(u.fid);
-            }
-        } else if (window.sdk && window.sdk.context && window.sdk.context.user) {
-             // Fallback to window.sdk if available
-             const u = window.sdk.context.user;
-             if (u.username) safeUsername = u.username;
-             else if (u.fid) safeUsername = String(u.fid);
-        } else {
-             // Fallback for non-farcaster environment
-             safeUsername = "User" + Math.floor(Math.random()*1000);
-        }
-      } catch (err) {
-        console.warn("Error getting user context, using fallback", err);
-        safeUsername = "Guest" + Math.floor(Math.random()*1000);
+          // 2. Extract User
+          if (context && context.user) {
+              const u = context.user;
+              
+              // Debug log to see what we are dealing with
+              console.log("Farcaster User Object:", u);
+
+              // Check for Username
+              if (u.username && typeof u.username === 'string') {
+                  finalUsername = u.username;
+              } 
+              // Check for FID
+              else if (u.fid) {
+                  // FID might be a number, string, or BigInt. 
+                  // Safely convert to string.
+                  finalUsername = u.fid + ""; 
+              }
+          }
+      } catch (e) {
+          console.warn("Failed to retrieve Farcaster profile:", e);
       }
 
-      // Final Sanity Check - Ensure it is a primitive string
-      if (typeof safeUsername !== 'string') {
-          safeUsername = String(safeUsername);
+      // 3. Fallback if still empty or object
+      if (!finalUsername || typeof finalUsername === 'object') {
+          finalUsername = "Guest-" + Math.floor(Math.random() * 1000);
       }
 
-      const safeData = {
-          user: safeUsername,
-          score: Number(scoreVal) || 0,
+      // 4. Create Data Object
+      const docData = {
+          user: finalUsername,
+          score: Number(scoreVal),
           timestamp: Date.now()
       };
 
-      console.log("Attempting to save:", safeData);
-
-      // We attempt to save. If permissions/auth fail, the catch block in endGame handles it.
-      await addDoc(collection(db, "scores"), safeData);
-      console.log("✅ Score saved to Firebase successfully");
+      console.log("Saving to Firestore:", docData);
+      
+      // 5. Save
+      await addDoc(collection(db, "scores"), docData);
+      console.log("✅ Saved!");
     }
 
     function useJoker(type) {
