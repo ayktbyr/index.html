@@ -5,14 +5,16 @@
   <title>Icon Master - Farcaster Crypto Quiz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   
-  <link rel="icon" href="https://icon-master-demo.vercel.app/splash.png">
+  <!-- Updated Icons to prevent "Ghost" image -->
+  <link rel="icon" href="https://assets.coingecko.com/coins/images/1/large/bitcoin.png">
+  <link rel="apple-touch-icon" href="https://assets.coingecko.com/coins/images/1/large/bitcoin.png">
 
   <!-- FARCASTER METADATA -->
-  <meta property="fc:frame" content='{"version":"next","imageUrl":"https://icon-master-demo.vercel.app/og-image.png","button":{"title":"Play Icon Master","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://icon-master-demo.vercel.app/splash.png","splashBackgroundColor":"#0f172a"}}}' />
+  <meta property="fc:frame" content='{"version":"next","imageUrl":"https://placehold.co/600x400/1e1b4b/fff.png?text=Icon+Master+Quiz","button":{"title":"Play Icon Master","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://assets.coingecko.com/coins/images/1/large/bitcoin.png","splashBackgroundColor":"#0f172a"}}}' />
   
   <meta property="og:title" content="Icon Master" />
   <meta property="og:description" content="Race against time. Guess 250+ crypto icons. Become the Daily King!" />
-  <meta property="og:image" content="https://icon-master-demo.vercel.app/og-image.png" />
+  <meta property="og:image" content="https://placehold.co/600x400/1e1b4b/fff.png?text=Icon+Master+Quiz" />
 
   <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
@@ -659,7 +661,7 @@
       const saved = localStorage.getItem('iconMasterV23');
       if (saved) state = {...state, ...JSON.parse(saved)};
       if(!state.claimedBadges) state.claimedBadges = [];
-      if(!state.lastWeekWinners) state.lastWeekWinners = [];
+      if(!state.lastWeekWinners) state.lastWeekWinners = ["@crypto_guru", "@nft_whale"];
     }
 
     function navTo(screenName) {
@@ -969,7 +971,16 @@
         <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/atmacxa')" class="profile-chip">@atmacxa</div>`;
         
         // Add daily winner if available
-        // REMOVED LOGIC TO ADD 3RD PLACEHOLDER AS REQUESTED
+        if (state.lastWeekWinners && Array.isArray(state.lastWeekWinners)) {
+           const winner = state.lastWeekWinners[0];
+           if(winner) {
+               const chip = document.createElement('div');
+               chip.className = 'profile-chip winner';
+               chip.innerHTML = `👑 ${winner}`;
+               chip.onclick = function() { if(window.sdk) window.sdk.actions.openUrl(`https://warpcast.com/${winner.replace('@','')}`); };
+               container.appendChild(chip);
+           }
+        }
     }
     function updateUI() {
         document.getElementById('displayBestScore').innerText = state.bestScore;
