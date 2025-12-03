@@ -5,19 +5,19 @@
   <title>Icon Master - Farcaster Crypto Quiz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   
-  <!-- FAVICON: Tarayıcı sekmeleri için mor şimşek ikonu -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%238b5cf6%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M13 2L3 14h9l-1 8 10-12h-9l1-8z%22/></svg>">
-  
-  <!-- MANIFEST: Farcaster'ın ikonu buradan çekecek. Bitcoin yerine Şimşek emojili görsel tanımlandı. -->
-  <!-- BU KODU YÜKLEDİKTEN SONRA DEVELOPER PANELİNDEN "REFRESH MANIFEST" BUTONUNA BASMALISIN -->
-  <link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Icon Master","short_name":"IconMaster","description":"Race against time. Guess 250+ crypto icons.","icons":[{"src":"https://placehold.co/512x512/1e1b4b/fff.png?text=%E2%9A%A1","sizes":"512x512","type":"image/png"},{"src":"https://placehold.co/192x192/1e1b4b/fff.png?text=%E2%9A%A1","sizes":"192x192","type":"image/png"}],"display":"standalone","start_url":"/","theme_color":"#0f172a","background_color":"#0f172a"}'>
+  <!-- FAVICON: Senin GitHub'daki İkonun -->
+  <link rel="icon" href="https://raw.githubusercontent.com/ayktbyr/icon-master-assets/main/icon_1024.png">
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ayktbyr/icon-master-assets/main/icon_1024.png">
+
+  <!-- MANIFEST (GÖMÜLÜ): Farcaster ve Tarayıcılar için -->
+  <link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Icon Master","short_name":"IconMaster","description":"Race against time. Guess 250+ crypto icons.","icons":[{"src":"https://raw.githubusercontent.com/ayktbyr/icon-master-assets/main/icon_1024.png","sizes":"1024x1024","type":"image/png"},{"src":"https://raw.githubusercontent.com/ayktbyr/icon-master-assets/main/icon_1024.png","sizes":"512x512","type":"image/png"},{"src":"https://raw.githubusercontent.com/ayktbyr/icon-master-assets/main/icon_1024.png","sizes":"192x192","type":"image/png"}],"display":"standalone","start_url":"/","theme_color":"#0f172a","background_color":"#0f172a"}'>
 
   <!-- FARCASTER METADATA -->
-  <meta property="fc:frame" content='{"version":"next","imageUrl":"https://placehold.co/600x400/1e1b4b/fff.png?text=⚡+Icon+Master","button":{"title":"Play Icon Master","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://placehold.co/400x400/1e1b4b/fff.png?text=⚡","splashBackgroundColor":"#0f172a"}}}' />
+  <meta property="fc:frame" content='{"version":"next","imageUrl":"https://raw.githubusercontent.com/ayktbyr/icon-master-assets/main/icon_1024.png","button":{"title":"Play Icon Master","action":{"type":"launch_frame","name":"Icon Master","url":"https://index-html-one-psi.vercel.app","splashImageUrl":"https://raw.githubusercontent.com/ayktbyr/icon-master-assets/main/icon_1024.png","splashBackgroundColor":"#0f172a"}}}' />
   
   <meta property="og:title" content="Icon Master" />
   <meta property="og:description" content="Race against time. Guess 250+ crypto icons. Become the Daily King!" />
-  <meta property="og:image" content="https://placehold.co/600x400/1e1b4b/fff.png?text=⚡+Icon+Master" />
+  <meta property="og:image" content="https://raw.githubusercontent.com/ayktbyr/icon-master-assets/main/icon_1024.png" />
 
   <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
@@ -340,6 +340,7 @@
 <div class="app-container">
   <header class="header">
     <div class="brand">
+      <!-- Şimşek ikonu oyun içinde zaten kullanılıyor -->
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
       Icon Master
     </div>
@@ -586,7 +587,7 @@
       {id: "dydx", symbol: "dydx", name: "dYdX", img: "https://assets.coingecko.com/coins/images/17500/large/hjnIm9bV.jpg"},
       {id: "pancakeswap-token", symbol: "cake", name: "PancakeSwap", img: "https://assets.coingecko.com/coins/images/12632/large/pancakeswap-cake-logo_%281%29.png"},
       {id: "zcash", symbol: "zec", name: "Zcash", img: "https://assets.coingecko.com/coins/images/486/large/circle-zcash-color.png"},
-      {id: "iota", symbol: "miota", name: "IOTA", img: "https://assets.coingecko.com/coins/images/692/large/IOTA_Swirl.png"},
+      {id: "iota", symbol: "miota", name: "IOTA", img: "https://assets.coingecko.com/coins/images/69/large/IOTA_Swirl.png"},
       {id: "dash", symbol: "dash", name: "Dash", img: "https://assets.coingecko.com/coins/images/19/large/dash-logo.png"},
       {id: "arweave", symbol: "ar", name: "Arweave", img: "https://assets.coingecko.com/coins/images/4343/large/o5OwxTC.png"},
       {id: "curve-dao-token", symbol: "crv", name: "Curve DAO", img: "https://assets.coingecko.com/coins/images/12124/large/Curve.png"},
@@ -969,14 +970,31 @@
     function updateQuestLeaders() {
         const container = document.getElementById('quest-profiles-container');
         if(!container) return;
-        container.innerHTML = `
-        <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/ayktbyr')" class="profile-chip">@ayktbyr</div>
-        <div onclick="if(window.sdk) window.sdk.actions.openUrl('https://warpcast.com/atmacxa')" class="profile-chip">@atmacxa</div>`;
         
-        // Add daily winner if available
-        if (state.lastWeekWinners && Array.isArray(state.lastWeekWinners)) {
+        // Clear existing content
+        container.innerHTML = '';
+
+        // Define fixed profiles
+        const fixedProfiles = ['ayktbyr', 'atmacxa'];
+        
+        // Add Fixed Profiles
+        fixedProfiles.forEach(username => {
+             const chip = document.createElement('div');
+             chip.className = 'profile-chip';
+             chip.innerHTML = `@${username}`;
+             chip.onclick = () => { if(window.sdk) window.sdk.actions.openUrl(`https://warpcast.com/${username}`); };
+             container.appendChild(chip);
+        });
+
+        // Add Weekly Winner if exists and is NOT in fixed profiles
+        if (state.lastWeekWinners && Array.isArray(state.lastWeekWinners) && state.lastWeekWinners.length > 0) {
            const winner = state.lastWeekWinners[0];
-           if(winner) {
+           
+           // Deduplication check: Normalize winner name (remove @ if present) and check against fixed list
+           const normalizedWinner = winner.replace('@', '').toLowerCase();
+           const isFixed = fixedProfiles.some(p => p.toLowerCase() === normalizedWinner);
+
+           if(winner && !isFixed) {
                const chip = document.createElement('div');
                chip.className = 'profile-chip winner';
                chip.innerHTML = `👑 ${winner}`;
