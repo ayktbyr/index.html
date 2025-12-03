@@ -491,11 +491,8 @@
             await signInAnonymously(auth);
             console.log("✅ Firebase: Signed in anonymously");
         } catch (error) {
-            if (error.code === 'auth/configuration-not-found') {
-                console.warn("⚠️ Firebase Warning: 'Anonymous' sign-in is disabled in your Firebase Console. Go to Authentication > Sign-in method > Enable Anonymous.");
-            } else {
-                console.warn("Auth failed:", error.message);
-            }
+            console.warn("Auth failed:", error.code, error.message);
+            // We can try to proceed, maybe rules allow unauthenticated write (insecure but possible for dev)
         }
     };
     initAuth();
@@ -865,8 +862,14 @@
           } catch(e) {
              console.error("Firebase save failed", e);
              if(statusEl) { 
-                 // Don't scare user if it's just auth warning, but show status
-                 statusEl.innerText = "⚠️ Save Failed (Check Logs)"; 
+                 // Translated errors for clarity
+                 if (e.code === 'permission-denied') {
+                    statusEl.innerText = "⚠️ Save Failed: Permission Denied (Check Rules)";
+                 } else if (e.code === 'unavailable') {
+                    statusEl.innerText = "⚠️ Save Failed: Network Error";
+                 } else {
+                    statusEl.innerText = "⚠️ Save Failed: " + (e.code || "Unknown Error"); 
+                 }
                  statusEl.style.color = "#f87171"; 
              }
           }
