@@ -7,11 +7,11 @@
   "frame": {
     "version": "1",
     "name": "Icon Master",
-    "iconUrl": "https://icon-master-demo.vercel.app/splash.png",
+    "iconUrl": "https://raw.githubusercontent.com/ayktbyr/icon-master-assets/main/icon_1024.png",
     "homeUrl": "https://index-html-one-psi.vercel.app",
     "imageUrl": "https://icon-master-demo.vercel.app/og-image.png",
     "buttonTitle": "Play",
-    "splashImageUrl": "https://icon-master-demo.vercel.app/splash.png",
+    "splashImageUrl": "https://raw.githubusercontent.com/ayktbyr/icon-master-assets/main/icon_1024.png",
     "splashBackgroundColor": "#0f172a",
     "webhookUrl": "https://index-html-one-psi.vercel.app/api/webhook"
   }
