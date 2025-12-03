@@ -435,6 +435,27 @@
   <button class="btn-secondary" onclick="closeModal()">Main Menu</button>
 </div>
 
+<!-- Standard Script for Immediate Global Access -->
+<script>
+  // Global variable to share state between modules and HTML attributes
+  var currentCoin = null;
+
+  // Moved outside module to be accessible by <img onerror="..."> immediately
+  function handleImageError(img) {
+    if (!img || !currentCoin) return;
+    
+    // Check if we are already using the fallback to avoid loops
+    if (img.src.includes('assets.coincap.io')) {
+      img.style.display = 'none';
+      document.getElementById('coinFallback').style.display = 'flex';
+      document.getElementById('coinFallback').innerText = currentCoin.symbol.toUpperCase();
+      return;
+    }
+    // Try alternate source
+    img.src = `https://assets.coincap.io/assets/icons/${currentCoin.symbol.toLowerCase()}@2x.png`;
+  }
+</script>
+
 <!-- Farcaster SDK & Firebase & Game Logic -->
 <script type="module">
     // --- FIREBASE IMPORTS ---
@@ -589,18 +610,8 @@
       } catch (e) {}
     };
 
-    function handleImageError(img) {
-      if (!img || !currentCoin) return;
-      if (img.src.includes('assets.coincap.io')) {
-        img.style.display = 'none';
-        document.getElementById('coinFallback').style.display = 'flex';
-        document.getElementById('coinFallback').innerText = currentCoin.symbol.toUpperCase();
-        return;
-      }
-      img.src = `https://assets.coincap.io/assets/icons/${currentCoin.symbol.toLowerCase()}@2x.png`;
-    }
-
-    window.handleImageError = handleImageError;
+    // Note: handleImageError has been moved to the standard script tag above 
+    // to prevent ReferenceError before the module loads.
 
     let state = {
       score: 0, totalPoints: 0, totalGames: 0, jokersUsed: 0, bestScore: 0,
@@ -608,7 +619,10 @@
       lastWeekWinners: ["@crypto_guru", "@nft_whale"], // Placeholder fallback
       history: [] // Not used for global leaderboard anymore, only local session history if needed
     };
-    let currentCoin, currentOptions, gameTimer, timerStart;
+    
+    // Using window.currentCoin now instead of let currentCoin
+    // let currentCoin;  <-- REMOVED
+    let currentOptions, gameTimer, timerStart;
     let usedCoinIds = new Set();
     let activeJokers = { fifty: false, double: false };
     let doubleChanceUsed = false;
@@ -716,18 +730,20 @@
       
       let pool = COIN_DB.filter(c => !usedCoinIds.has(c.id));
       if(pool.length === 0) { pool = COIN_DB; usedCoinIds.clear(); }
-      currentCoin = pool[Math.floor(Math.random() * pool.length)];
-      usedCoinIds.add(currentCoin.id);
       
-      let wrongs = COIN_DB.filter(c => c.id !== currentCoin.id).sort(() => 0.5 - Math.random()).slice(0, 3);
-      currentOptions = [currentCoin, ...wrongs].sort(() => 0.5 - Math.random());
+      // Update global currentCoin so standard script can access it
+      window.currentCoin = pool[Math.floor(Math.random() * pool.length)];
+      usedCoinIds.add(window.currentCoin.id);
+      
+      let wrongs = COIN_DB.filter(c => c.id !== window.currentCoin.id).sort(() => 0.5 - Math.random()).slice(0, 3);
+      currentOptions = [window.currentCoin, ...wrongs].sort(() => 0.5 - Math.random());
       
       renderGameScreen();
       startTimer(usedCoinIds.size === 1 ? 10000 : 7000);
     }
 
     function renderGameScreen() {
-      document.getElementById('coinImage').src = currentCoin.img;
+      document.getElementById('coinImage').src = window.currentCoin.img;
       document.getElementById('gameScore').innerText = state.score;
       const grid = document.getElementById('optionsGrid'); grid.innerHTML = '';
       currentOptions.forEach(opt => {
@@ -758,7 +774,7 @@
       const allBtns = document.querySelectorAll('.option-btn');
       allBtns.forEach(b => b.disabled = true); 
 
-      if(id === currentCoin.id) {
+      if(id === window.currentCoin.id) {
         clearInterval(gameTimer);
         const pts = Math.max(1, Math.ceil(10 * (1 - (Date.now()-timerStart)/(usedCoinIds.size===1?10000:7000))));
         state.score += pts; 
@@ -776,7 +792,7 @@
             return; 
         }
         clearInterval(gameTimer);
-        Array.from(document.querySelectorAll('.option-btn')).find(b => b.innerText === currentCoin.name).classList.add('correct');
+        Array.from(document.querySelectorAll('.option-btn')).find(b => b.innerText === window.currentCoin.name).classList.add('correct');
         document.getElementById('gameOverIndicator').style.display = 'block';
         setTimeout(() => endGame("Wrong Answer!"), 1500);
       }
@@ -785,7 +801,7 @@
         const allBtns = document.querySelectorAll('.option-btn');
         allBtns.forEach(b => {
           b.disabled = true;
-          if (b.innerText === currentCoin.name) b.classList.add('correct');
+          if (b.innerText === window.currentCoin.name) b.classList.add('correct');
         });
         document.getElementById('gameOverIndicator').style.display = 'block';
         setTimeout(() => endGame("Time's Up!"), 1500);
@@ -834,7 +850,7 @@
       if(type === '5050') {
         activeJokers.fifty = true; sessionJokers.fifty = true;
         document.getElementById('btnJoker50').classList.add('used');
-        const wrongs = Array.from(document.querySelectorAll('.option-btn')).filter(b => b.innerText !== currentCoin.name);
+        const wrongs = Array.from(document.querySelectorAll('.option-btn')).filter(b => b.innerText !== window.currentCoin.name);
         wrongs.sort(() => 0.5 - Math.random()).slice(0, 2).forEach(b => { b.disabled = true; b.style.opacity = 0.2; b.classList.add('disabled-by-joker'); });
       } else {
         activeJokers.double = true; sessionJokers.double = true;
