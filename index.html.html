@@ -451,6 +451,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
     import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
 
     window.sdk = sdk;
@@ -470,15 +471,16 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    const analytics = getAnalytics(app); // Ensure analytics is running
     
     // Robust Auth Initialization
     const initAuth = async () => {
         try {
             await signInAnonymously(auth);
-            console.log("Signed in anonymously");
+            console.log("✅ Firebase: Signed in anonymously");
         } catch (error) {
             if (error.code === 'auth/configuration-not-found') {
-                console.warn("⚠️ Firebase Auth Warning: Anonymous authentication is not enabled in the Firebase Console. Leaderboard features may fail unless 'Anonymous' provider is enabled in the Auth section.");
+                console.warn("⚠️ Firebase Warning: 'Anonymous' sign-in is disabled in your Firebase Console. Go to Authentication > Sign-in method > Enable Anonymous.");
             } else {
                 console.warn("Auth failed:", error.message);
             }
@@ -813,41 +815,46 @@
         setTimeout(() => endGame("Time's Up!"), 1500);
     }
 
-    // --- FIREBASE SCORE SAVING ---
-    async function endGame(msg) {
+    // --- FIREBASE SCORE SAVING (Fixed to be non-blocking) ---
+    function endGame(msg) {
+      // 1. Update Local State immediately
       state.totalGames++; state.totalPoints += state.score;
       if(state.score > state.bestScore) state.bestScore = state.score;
       saveState();
       
-      // Get User info (from SDK context or fallback)
+      // 2. Show Modal IMMEDIATELY (Do not wait for Firebase)
+      document.getElementById('resScoreVal').innerText = state.score;
+      document.getElementById('resBestVal').innerText = state.bestScore;
+      document.getElementById('modalOverlay').classList.remove('hidden');
+      document.getElementById('modalBox').classList.remove('hidden');
+
+      // 3. Send to Firebase in background (Fire and forget)
+      if (state.score > 0) {
+          saveScoreToFirebase(state.score);
+      }
+    }
+
+    async function saveScoreToFirebase(scoreVal) {
       let username = "Anonymous";
       if (window.sdk && window.sdk.context && window.sdk.context.user) {
           username = window.sdk.context.user.username || window.sdk.context.user.fid;
       } else {
-          // If running outside frame or context not loaded
            username = "User" + Math.floor(Math.random()*1000);
       }
 
-      // Save to Firebase
-      if (state.score > 0) {
-        try {
-            await addDoc(collection(db, "scores"), {
-                user: username,
-                score: state.score,
-                timestamp: Date.now()
-            });
-            console.log("Score saved to Firebase successfully"); // Added success log
-        } catch (e) {
-            console.error("Error saving score: ", e);
-            // Optionally alert the user in dev mode, but keep silent in prod
-        }
+      try {
+          await addDoc(collection(db, "scores"), {
+              user: username,
+              score: scoreVal,
+              timestamp: Date.now()
+          });
+          console.log("✅ Score saved to Firebase successfully");
+      } catch (e) {
+          console.error("❌ Error saving score:", e);
+          if(e.code === 'permission-denied') {
+              console.warn("⚠️ PERMISSION DENIED: Check Firestore Rules. Standard rules require Auth. If Auth failed, this fails too.");
+          }
       }
-
-      document.getElementById('resScoreVal').innerText = state.score;
-      document.getElementById('resBestVal').innerText = state.bestScore;
-      
-      document.getElementById('modalOverlay').classList.remove('hidden');
-      document.getElementById('modalBox').classList.remove('hidden');
     }
 
     function useJoker(type) {
