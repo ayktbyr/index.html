@@ -885,16 +885,28 @@
       let safeUsername = "Anonymous";
       
       try {
-        // Safe extraction of user data
-        if (window.sdk && window.sdk.context && window.sdk.context.user) {
-            const u = window.sdk.context.user;
-            // Explicitly check properties and types to avoid Symbol.toPrimitive error
-            if (u.username && typeof u.username === 'string') {
+        // Retrieve context using the imported 'sdk' variable
+        // In newer frame SDKs, context might be a property or a promise.
+        // We'll handle it defensively.
+        let context = sdk.context;
+        
+        // If context is a Promise, await it
+        if (context instanceof Promise) {
+            context = await context;
+        }
+
+        if (context && context.user) {
+            const u = context.user;
+            if (u.username) {
                 safeUsername = u.username;
             } else if (u.fid) {
-                // If fid is a number or bigint, safely convert to string
                 safeUsername = String(u.fid);
             }
+        } else if (window.sdk && window.sdk.context && window.sdk.context.user) {
+             // Fallback to window.sdk if available
+             const u = window.sdk.context.user;
+             if (u.username) safeUsername = u.username;
+             else if (u.fid) safeUsername = String(u.fid);
         } else {
              // Fallback for non-farcaster environment
              safeUsername = "User" + Math.floor(Math.random()*1000);
