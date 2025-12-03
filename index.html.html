@@ -450,6 +450,7 @@
     // --- FIREBASE IMPORTS ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     import sdk from 'https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.0.22/+esm';
 
     window.sdk = sdk;
@@ -468,6 +469,22 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+    
+    // Robust Auth Initialization
+    const initAuth = async () => {
+        try {
+            await signInAnonymously(auth);
+            console.log("Signed in anonymously");
+        } catch (error) {
+            if (error.code === 'auth/configuration-not-found') {
+                console.warn("⚠️ Firebase Auth Warning: Anonymous authentication is not enabled in the Firebase Console. Leaderboard features may fail unless 'Anonymous' provider is enabled in the Auth section.");
+            } else {
+                console.warn("Auth failed:", error.message);
+            }
+        }
+    };
+    initAuth();
 
     // Make functions globally available for inline HTML events
     window.startGameFlow = startGameFlow;
