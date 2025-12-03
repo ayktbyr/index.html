@@ -882,29 +882,35 @@
           await signInAnonymously(auth);
       }
 
-      let username = "Anonymous";
+      let safeUsername = "Anonymous";
       
       try {
         // Safe extraction of user data
         if (window.sdk && window.sdk.context && window.sdk.context.user) {
             const u = window.sdk.context.user;
-            if (u.username) {
-                username = u.username;
+            // Explicitly check properties and types to avoid Symbol.toPrimitive error
+            if (u.username && typeof u.username === 'string') {
+                safeUsername = u.username;
             } else if (u.fid) {
-                username = u.fid.toString();
+                // If fid is a number or bigint, safely convert to string
+                safeUsername = String(u.fid);
             }
         } else {
              // Fallback for non-farcaster environment
-             username = "User" + Math.floor(Math.random()*1000);
-             console.log("No Farcaster context found, using random username:", username);
+             safeUsername = "User" + Math.floor(Math.random()*1000);
         }
       } catch (err) {
         console.warn("Error getting user context, using fallback", err);
+        safeUsername = "Guest" + Math.floor(Math.random()*1000);
       }
 
-      // Final Sanity Check - Firestore throws "invalid-argument" if a field is undefined
+      // Final Sanity Check - Ensure it is a primitive string
+      if (typeof safeUsername !== 'string') {
+          safeUsername = String(safeUsername);
+      }
+
       const safeData = {
-          user: String(username || "Anonymous"),
+          user: safeUsername,
           score: Number(scoreVal) || 0,
           timestamp: Date.now()
       };
