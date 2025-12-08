@@ -661,12 +661,7 @@
         checkBadges(); 
     }
     
-    function loadState() {
-      const saved = localStorage.getItem('iconMasterV23');
-      if (saved) state = {...state, ...JSON.parse(saved)};
-      if(!state.claimedBadges) state.claimedBadges = [];
-      if(!state.lastWeekWinners) state.lastWeekWinners = ["tfc", "@nft_whale"];
-    }
+  
 
     function navTo(screenName) {
       document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
